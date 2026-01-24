@@ -1,0 +1,142 @@
+//
+//  DialogBox.swift
+//  Donut
+//
+//  Created by kartikay on 23/01/26.
+//
+
+import SpriteKit
+
+class DialogBox: SKNode {
+
+    private var backgroundBox: SKShapeNode!
+    private var nameLabel: SKLabelNode!
+    private var dialogLabel: SKLabelNode!
+    private var continueIndicator: SKLabelNode!
+
+    private var fullText: String = ""
+    private var currentCharacterIndex: Int = 0
+    private var isTyping: Bool = false
+
+    private let boxHeight: CGFloat = 220
+    private let padding: CGFloat = 40
+
+    var onDialogComplete: (() -> Void)?
+
+    override init() {
+        super.init()
+        setupDialogBox()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        setupDialogBox()
+    }
+
+    private func setupDialogBox() {
+        let boxWidth: CGFloat = 1400
+        let cornerRadius: CGFloat = 25
+
+        let rect = CGRect(x: -boxWidth / 2, y: 0, width: boxWidth, height: boxHeight)
+        backgroundBox = SKShapeNode(rect: rect, cornerRadius: cornerRadius)
+        backgroundBox.fillColor = SKColor(red: 0.1, green: 0.1, blue: 0.15, alpha: 0.9)
+        backgroundBox.strokeColor = SKColor(red: 0.4, green: 0.35, blue: 0.3, alpha: 1.0)
+        backgroundBox.lineWidth = 4
+        backgroundBox.zPosition = 100
+        addChild(backgroundBox)
+
+        nameLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        nameLabel.fontSize = 28
+        nameLabel.fontColor = SKColor(red: 1.0, green: 0.85, blue: 0.4, alpha: 1.0)
+        nameLabel.horizontalAlignmentMode = .left
+        nameLabel.verticalAlignmentMode = .top
+        nameLabel.position = CGPoint(x: -boxWidth / 2 + padding, y: boxHeight - 20)
+        nameLabel.zPosition = 101
+        addChild(nameLabel)
+
+        dialogLabel = SKLabelNode(fontNamed: "AvenirNext-Medium")
+        dialogLabel.fontSize = 26
+        dialogLabel.fontColor = .white
+        dialogLabel.horizontalAlignmentMode = .left
+        dialogLabel.verticalAlignmentMode = .top
+        dialogLabel.position = CGPoint(x: -boxWidth / 2 + padding, y: boxHeight - 60)
+        dialogLabel.preferredMaxLayoutWidth = boxWidth - (padding * 2)
+        dialogLabel.numberOfLines = 3
+        dialogLabel.zPosition = 101
+        addChild(dialogLabel)
+
+        continueIndicator = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        continueIndicator.text = "▼"
+        continueIndicator.fontSize = 20
+        continueIndicator.fontColor = .white
+        continueIndicator.position = CGPoint(x: boxWidth / 2 - padding - 20, y: 25)
+        continueIndicator.zPosition = 101
+        continueIndicator.alpha = 0
+        addChild(continueIndicator)
+
+        self.alpha = 0
+    }
+
+    func showDialog(name: String, text: String, typingSpeed: TimeInterval = 0.03) {
+        nameLabel.text = name
+        fullText = text
+        currentCharacterIndex = 0
+        dialogLabel.text = ""
+        isTyping = true
+        continueIndicator.alpha = 0
+        continueIndicator.removeAllActions()
+
+        self.run(SKAction.fadeIn(withDuration: 0.3))
+
+        startTypewriter(speed: typingSpeed)
+    }
+
+    func hideDialog() {
+        self.removeAction(forKey: "typewriter")
+        self.run(SKAction.fadeOut(withDuration: 0.3))
+    }
+
+    func handleTap() {
+        if isTyping {
+            self.removeAction(forKey: "typewriter")
+            dialogLabel.text = fullText
+            isTyping = false
+            showContinueIndicator()
+        } else {
+            onDialogComplete?()
+        }
+    }
+
+    private func startTypewriter(speed: TimeInterval) {
+        self.removeAction(forKey: "typewriter")
+        currentCharacterIndex = 0
+
+        let typeAction = SKAction.run { [weak self] in
+            guard let self = self else { return }
+
+            if self.currentCharacterIndex < self.fullText.count {
+                let index = self.fullText.index(
+                    self.fullText.startIndex, offsetBy: self.currentCharacterIndex)
+                self.dialogLabel.text = String(self.fullText[...index])
+                self.currentCharacterIndex += 1
+            } else {
+                self.removeAction(forKey: "typewriter")
+                self.isTyping = false
+                self.showContinueIndicator()
+            }
+        }
+
+        let waitAction = SKAction.wait(forDuration: speed)
+        let sequence = SKAction.sequence([typeAction, waitAction])
+        let repeatAction = SKAction.repeatForever(sequence)
+
+        self.run(repeatAction, withKey: "typewriter")
+    }
+
+    private func showContinueIndicator() {
+        let fadeIn = SKAction.fadeIn(withDuration: 0.4)
+        let fadeOut = SKAction.fadeAlpha(to: 0.3, duration: 0.4)
+        let blink = SKAction.sequence([fadeIn, fadeOut])
+        continueIndicator.run(SKAction.repeatForever(blink))
+    }
+}
