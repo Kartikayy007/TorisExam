@@ -8,17 +8,14 @@
 import SpriteKit
 import SwiftUI
 
-class BedroomScene: SKScene {
+class BedroomScene: BaseScene {
 
-    
     private var dialogBox: DialogBox!
 
-    
     private var boy: SKSpriteNode!
     private var robot: SKSpriteNode!
     private var room: SKSpriteNode!
 
-    
     private var dialogues: [(name: String, text: String)] = []
     private var currentDialogIndex = 0
     private var isPostAlarm: Bool = false
@@ -28,11 +25,17 @@ class BedroomScene: SKScene {
         super.init(size: size)
     }
 
+    required init(size: CGSize) {
+        self.isPostAlarm = false
+        super.init(size: size)
+    }
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func didMove(to view: SKView) {
+        super.didMove(to: view)
         setupScene()
         setupDialogBox()
 
@@ -46,37 +49,34 @@ class BedroomScene: SKScene {
     private func setupScene() {
         backgroundColor = .black
 
-        
         room = SKSpriteNode(imageNamed: "Room")
         room.position = CGPoint(x: size.width / 2, y: size.height / 2)
         room.zPosition = 0
         let scaleX = size.width / room.size.width
         let scaleY = size.height / room.size.height
         room.setScale(max(scaleX, scaleY))
-        addChild(room)
+        gameLayer.addChild(room)
 
-        
         boy = SKSpriteNode(imageNamed: "Sleeping")
         boy.zPosition = 1
         boy.position = CGPoint(x: size.width * 0.35, y: size.height * 0.54)
         let boyScale = (size.width * 0.37) / boy.size.width
         boy.setScale(boyScale)
-        addChild(boy)
+        gameLayer.addChild(boy)
 
-        
         robot = SKSpriteNode(imageNamed: "RoboSleep")
         robot.zPosition = 1
         robot.position = CGPoint(x: size.width * 0.68, y: size.height * 0.55)
         let roboScale = (size.width * 0.4) / robot.size.width
         robot.setScale(roboScale)
-        addChild(robot)
+        gameLayer.addChild(robot)
     }
 
     private func setupDialogBox() {
         dialogBox = DialogBox()
         dialogBox.position = CGPoint(x: size.width / 2, y: 120)
         dialogBox.zPosition = 100
-        addChild(dialogBox)
+        gameLayer.addChild(dialogBox)
 
         dialogBox.onDialogComplete = { [weak self] in
             self?.advanceStory()
@@ -85,8 +85,7 @@ class BedroomScene: SKScene {
 
     private func startInitialSequence() {
         dialogues = [
-            ("", "Zzz... Zzz... *snoring peacefully*"),
-            ("", "*RING RING RING!* 🔔"),
+            ("", "Zzz... Zzz... snoring peacefully")
         ]
         currentDialogIndex = 0
         showCurrentDialogue()
@@ -98,8 +97,8 @@ class BedroomScene: SKScene {
 
         dialogues = [
             ("", "AHHHH!!!"),
-            ("", "Ugh... five more minutes..."),
-            ("", "..."),
+            ("", "Ugh... What!!! im late..."),
+            ("", "I have a exam too of Object oriented programing OOPS"),
         ]
         currentDialogIndex = 0
         showCurrentDialogue()
@@ -124,7 +123,7 @@ class BedroomScene: SKScene {
                 showCurrentDialogue()
             }
         } else {
-            
+
             if currentDialogIndex == 1 {
                 boy.texture = SKTexture(imageNamed: "Sitting")
                 boy.position = CGPoint(x: size.width * 0.35, y: size.height * 0.5)
@@ -153,8 +152,17 @@ class BedroomScene: SKScene {
         self.view?.presentScene(robotScene, transition: .fade(withDuration: 1.0))
     }
 
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    
+
+    override func handleTouch(at location: CGPoint, touch: UITouch) {
         dialogBox.handleTap()
+    }
+    
+    override func restartScene() {
+        guard let view = self.view else { return }
+        let newScene = BedroomScene(size: self.size, isPostAlarm: self.isPostAlarm)
+        newScene.scaleMode = self.scaleMode
+        view.presentScene(newScene)
     }
 }
 

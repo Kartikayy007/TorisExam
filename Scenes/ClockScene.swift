@@ -8,13 +8,14 @@
 import SpriteKit
 import SwiftUI
 
-class ClockScene: SKScene {
+class ClockScene: BaseScene {
 
     private var clockWall: SKSpriteNode!
     private var clock: SKSpriteNode!
     private var dialogBox: DialogBox!
 
     override func didMove(to view: SKView) {
+        super.didMove(to: view)
         setupScene()
         setupDialogBox()
         startAlarm()
@@ -23,29 +24,27 @@ class ClockScene: SKScene {
     private func setupScene() {
         backgroundColor = .black
 
-        
         clockWall = SKSpriteNode(imageNamed: "ClockWall")
         clockWall.position = CGPoint(x: size.width / 2, y: size.height / 2)
         clockWall.zPosition = 0
         let scaleX = size.width / clockWall.size.width
         let scaleY = size.height / clockWall.size.height
         clockWall.setScale(max(scaleX, scaleY))
-        addChild(clockWall)
+        gameLayer.addChild(clockWall)
 
-        
         clock = SKSpriteNode(imageNamed: "Clock")
         clock.position = CGPoint(x: size.width / 2, y: size.height / 2)
         clock.zPosition = 1
         let clockScale = (size.width * 0.65) / clock.size.width
         clock.setScale(clockScale)
-        addChild(clock)
+        gameLayer.addChild(clock)
     }
 
     private func setupDialogBox() {
         dialogBox = DialogBox()
         dialogBox.position = CGPoint(x: size.width / 2, y: 120)
         dialogBox.zPosition = 100
-        addChild(dialogBox)
+        gameLayer.addChild(dialogBox)
 
         dialogBox.onDialogComplete = { [weak self] in
             self?.returnToBedroom()
@@ -53,10 +52,9 @@ class ClockScene: SKScene {
     }
 
     private func startAlarm() {
-        
-        dialogBox.showDialog(name: "", text: "*RING RING RING!* 🔔")
 
-        
+        dialogBox.showDialog(name: "", text: "RING RING RING! 🔔")
+
         let rotateLeft = SKAction.rotate(byAngle: 0.15, duration: 0.05)
         let rotateRight = SKAction.rotate(byAngle: -0.3, duration: 0.1)
         let rotateBack = SKAction.rotate(byAngle: 0.15, duration: 0.05)
@@ -77,7 +75,7 @@ class ClockScene: SKScene {
         self.view?.presentScene(bedroomScene, transition: .fade(withDuration: 0.5))
     }
 
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func handleTouch(at location: CGPoint, touch: UITouch) {
         dialogBox.handleTap()
     }
 }

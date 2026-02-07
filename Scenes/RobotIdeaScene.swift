@@ -1,16 +1,16 @@
 //
-//  RobotIntroScene.swift
+//  RobotIdeaScene.swift
 //  Donut
 //
-//  Created by kartikay on 24/01/26.
+//  Created by kartikay on 25/01/26.
 //
 
 import SpriteKit
 import SwiftUI
 
-class RobotIntroScene: BaseScene {
+class RobotIdeaScene: BaseScene {
 
-    private var robotDone: SKSpriteNode!
+    private var robot: SKSpriteNode!
     private var dialogBox: DialogBox!
     private var dialogues: [String] = []
     private var currentIndex = 0
@@ -25,13 +25,13 @@ class RobotIntroScene: BaseScene {
     private func setupScene() {
         backgroundColor = SKColor(red: 0.835, green: 0.773, blue: 0.647, alpha: 1.0)
 
-        robotDone = SKSpriteNode(imageNamed: "RobotDone")
-        robotDone.position = CGPoint(x: size.width / 2, y: size.height / 2)
-        robotDone.zPosition = 0
-        let scaleX = size.width / robotDone.size.width
-        let scaleY = size.height / robotDone.size.height
-        robotDone.setScale(max(scaleX, scaleY))
-        gameLayer.addChild(robotDone)
+        robot = SKSpriteNode(imageNamed: "RoboIdea")
+        robot.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        robot.zPosition = 0
+        let scaleX = size.width / robot.size.width
+        let scaleY = size.height / robot.size.height
+        robot.setScale(max(scaleX, scaleY))
+        gameLayer.addChild(robot)
     }
 
     private func setupDialogBox() {
@@ -47,10 +47,8 @@ class RobotIntroScene: BaseScene {
 
     private func startDialogSequence() {
         dialogues = [
-            "AHHHHH!!!",
-            "I'm going to fail!",
-            "I don't know what to do... IDK IDK...",
-            "Someone help me!!",
+            "I have an idea!",
+            "Why don't you get ready, and I'll teach you OOP along the way!",
         ]
         currentIndex = 0
         showCurrentDialog()
@@ -61,13 +59,7 @@ class RobotIntroScene: BaseScene {
             dialogBox.hideDialog()
             return
         }
-        dialogBox.showDialog(name: "", text: dialogues[currentIndex])
-
-        let wait = SKAction.wait(forDuration: 1.5)
-        let advance = SKAction.run { [weak self] in
-            self?.advanceDialog()
-        }
-        run(SKAction.sequence([wait, advance]))
+        dialogBox.showDialog(name: "Robot", text: dialogues[currentIndex])
     }
 
     private func advanceDialog() {
@@ -80,9 +72,7 @@ class RobotIntroScene: BaseScene {
     }
 
     private func transitionToNextScene() {
-        let nextScene = KidScaredScene(size: self.size)
-        nextScene.scaleMode = .aspectFill
-        self.view?.presentScene(nextScene, transition: .fade(withDuration: 0.5))
+        // TODO: Transition to Blueprint/Hub scene
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {
