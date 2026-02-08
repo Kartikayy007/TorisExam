@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Donut
+//  Tori's Exam
 //
 //  Created by kartikay on 23/01/26.
 //
@@ -9,24 +9,38 @@ import SpriteKit
 import SwiftUI
 
 struct ContentView: View {
-    @State private var isPaused = false
-    @State private var showPauseMenu = false
-    @State private var scene: BaseScene = {
-        let scene = BedroomScene(size: CGSize(width: 1920, height: 1080))
-        scene.scaleMode = .aspectFill
-        return scene
-    }()
+    @StateObject private var gameState = GameStateManager()
 
     var body: some View {
         ZStack {
-            SpriteView(scene: scene)
-                .ignoresSafeArea()
+            switch gameState.currentScreen {
+            case .mainMenu:
+                MainMenuView(onStart: {
+                    gameState.startGame()
+                })
+
+            case .playing:
+                GamePlayView(gameState: gameState)
+            }
+        }
+    }
+}
+
+struct GamePlayView: View {
+    @ObservedObject var gameState: GameStateManager
+
+    var body: some View {
+        ZStack {
+            if let scene = gameState.currentScene {
+                SpriteView(scene: scene)
+                    .ignoresSafeArea()
+            }
 
             VStack {
                 HStack {
                     Spacer()
                     Button(action: {
-                        togglePause()
+                        gameState.pauseGame()
                     }) {
                         Image(systemName: "pause.circle.fill")
                             .resizable()
@@ -36,47 +50,31 @@ struct ContentView: View {
                     }
                     .padding(.top, 20)
                     .padding(.trailing, 30)
-                    .opacity(showPauseMenu ? 0 : 1)
+                    .opacity(gameState.isPaused ? 0 : 1)
                 }
                 Spacer()
             }
 
-            if showPauseMenu {
+            if gameState.isPaused {
                 PauseMenuView(
                     onResume: {
-                        resumeGame()
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            gameState.resumeGame()
+                        }
                     },
                     onRestart: {
-                        restartGame()
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            gameState.restartGame()
+                        }
+                    },
+                    onQuit: {
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            gameState.quitToMainMenu()
+                        }
                     }
                 )
                 .transition(.opacity)
             }
-        }
-    }
-
-    private func togglePause() {
-        scene.pause()
-        withAnimation(.easeOut(duration: 0.3)) {
-            showPauseMenu = true
-        }
-    }
-
-    private func resumeGame() {
-        withAnimation(.easeIn(duration: 0.2)) {
-            showPauseMenu = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            scene.resume()
-        }
-    }
-
-    private func restartGame() {
-        withAnimation(.easeIn(duration: 0.2)) {
-            showPauseMenu = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            scene.restartScene()
         }
     }
 }

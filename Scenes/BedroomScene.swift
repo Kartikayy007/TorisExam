@@ -1,6 +1,6 @@
 //
 //  BedroomScene.swift
-//  Donut
+//  Tori's Exam
 //
 //  Created by kartikay on 24/01/26.
 //
@@ -152,12 +152,10 @@ class BedroomScene: BaseScene {
         self.view?.presentScene(robotScene, transition: .fade(withDuration: 1.0))
     }
 
-    
-
     override func handleTouch(at location: CGPoint, touch: UITouch) {
         dialogBox.handleTap()
     }
-    
+
     override func restartScene() {
         guard let view = self.view else { return }
         let newScene = BedroomScene(size: self.size, isPostAlarm: self.isPostAlarm)

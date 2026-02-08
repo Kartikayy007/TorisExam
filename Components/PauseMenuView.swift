@@ -1,6 +1,6 @@
 //
 //  PauseMenuView.swift
-//  Donut
+//  Tori's Exam
 //
 //  Created by kartikay on 07/02/26.
 //
@@ -10,6 +10,7 @@ import SwiftUI
 struct PauseMenuView: View {
     let onResume: () -> Void
     let onRestart: () -> Void
+    let onQuit: () -> Void
 
     @State private var isVisible = false
 
@@ -35,12 +36,17 @@ struct PauseMenuView: View {
                     Button("Resume") {
                         onResume()
                     }
-                    .buttonStyle(PauseButtonStyle())
+                    .buttonStyle(MenuButtonStyle(color: .blue))
 
                     Button("Restart") {
                         onRestart()
                     }
-                    .buttonStyle(PauseButtonStyle())
+                    .buttonStyle(MenuButtonStyle(color: .orange))
+
+                    Button("Quit to Menu") {
+                        onQuit()
+                    }
+                    .buttonStyle(MenuButtonStyle(color: .red))
                 }
                 .padding(.top, 20)
             }
@@ -53,26 +59,19 @@ struct PauseMenuView: View {
             }
         }
     }
-
-    func animateOut(completion: @escaping () -> Void) {
-        withAnimation(.easeIn(duration: 0.2)) {
-            isVisible = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            completion()
-        }
-    }
 }
 
-struct PauseButtonStyle: ButtonStyle {
+struct MenuButtonStyle: ButtonStyle {
+    var color: Color = .blue
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 24, weight: .semibold))
             .foregroundColor(.white)
-            .frame(width: 200, height: 50)
+            .frame(width: 220, height: 55)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.blue.opacity(configuration.isPressed ? 0.6 : 0.8))
+                    .fill(color.opacity(configuration.isPressed ? 0.6 : 0.8))
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
@@ -80,5 +79,5 @@ struct PauseButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    PauseMenuView(onResume: {}, onRestart: {})
+    PauseMenuView(onResume: {}, onRestart: {}, onQuit: {})
 }

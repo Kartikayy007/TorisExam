@@ -1,6 +1,6 @@
 //
 //  KidScaredScene.swift
-//  Donut
+//  Tori's Exam
 //
 //  Created by kartikay on 25/01/26.
 //
@@ -121,7 +121,6 @@ class KidScaredScene: BaseScene {
         nextScene.scaleMode = .aspectFill
         self.view?.presentScene(nextScene, transition: .fade(withDuration: 0.5))
     }
-
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {
         dialogBox.handleTap()
