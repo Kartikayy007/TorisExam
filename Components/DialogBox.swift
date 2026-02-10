@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import SwiftUI
 
 class DialogBox: SKNode {
 
@@ -45,8 +46,8 @@ class DialogBox: SKNode {
         backgroundBox.zPosition = 100
         addChild(backgroundBox)
 
-        nameLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
-        nameLabel.fontSize = 28
+        nameLabel = SKLabelNode(fontNamed: "ChalkboardSE-Bold")
+        nameLabel.fontSize = 40
         nameLabel.fontColor = SKColor(red: 1.0, green: 0.85, blue: 0.4, alpha: 1.0)
         nameLabel.horizontalAlignmentMode = .left
         nameLabel.verticalAlignmentMode = .top
@@ -54,8 +55,8 @@ class DialogBox: SKNode {
         nameLabel.zPosition = 101
         addChild(nameLabel)
 
-        dialogLabel = SKLabelNode(fontNamed: "AvenirNext-Medium")
-        dialogLabel.fontSize = 26
+        dialogLabel = SKLabelNode(fontNamed: "ChalkboardSE-Regular")
+        dialogLabel.fontSize = 35
         dialogLabel.fontColor = .white
         dialogLabel.horizontalAlignmentMode = .left
         dialogLabel.verticalAlignmentMode = .top
@@ -65,9 +66,9 @@ class DialogBox: SKNode {
         dialogLabel.zPosition = 101
         addChild(dialogLabel)
 
-        continueIndicator = SKLabelNode(fontNamed: "AvenirNext-Bold")
-        continueIndicator.text = "▼"
-        continueIndicator.fontSize = 20
+        continueIndicator = SKLabelNode(fontNamed: "ChalkboardSE-Bold")
+        continueIndicator.text = ">"
+        continueIndicator.fontSize = 30
         continueIndicator.fontColor = .white
         continueIndicator.position = CGPoint(x: boxWidth / 2 - padding - 20, y: 25)
         continueIndicator.zPosition = 101
@@ -138,5 +139,30 @@ class DialogBox: SKNode {
         let fadeOut = SKAction.fadeAlpha(to: 0.3, duration: 0.4)
         let blink = SKAction.sequence([fadeIn, fadeOut])
         continueIndicator.run(SKAction.repeatForever(blink))
+    }
+}
+
+private class DialogBoxPreviewScene: SKScene {
+    override func didMove(to view: SKView) {
+        backgroundColor = SKColor(red: 0.15, green: 0.12, blue: 0.2, alpha: 1.0)
+
+        let dialog = DialogBox()
+        dialog.position = CGPoint(x: size.width / 2, y: 80)
+        dialog.zPosition = 100
+        addChild(dialog)
+
+        dialog.showDialog(
+            name: "Robot",
+            text:
+                "This is your closet! Here, Shirt and Pants INHERIT from Clothing. They share color & size, but add their own properties!"
+        )
+    }
+}
+
+struct DialogBox_Previews: PreviewProvider {
+    static var previews: some View {
+        SpriteView(scene: DialogBoxPreviewScene(size: CGSize(width: 1920, height: 1080)))
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
     }
 }

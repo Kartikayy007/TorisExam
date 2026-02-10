@@ -62,11 +62,6 @@ struct GamePlayView: View {
                             gameState.resumeGame()
                         }
                     },
-                    onRestart: {
-                        withAnimation(.easeIn(duration: 0.2)) {
-                            gameState.restartGame()
-                        }
-                    },
                     onQuit: {
                         withAnimation(.easeIn(duration: 0.2)) {
                             gameState.quitToMainMenu()

@@ -61,7 +61,7 @@ class RobotIntroScene: BaseScene {
             dialogBox.hideDialog()
             return
         }
-        dialogBox.showDialog(name: "", text: dialogues[currentIndex])
+        dialogBox.showDialog(name: "Tori", text: dialogues[currentIndex])
 
         let wait = SKAction.wait(forDuration: 1.5)
         let advance = SKAction.run { [weak self] in
@@ -80,9 +80,7 @@ class RobotIntroScene: BaseScene {
     }
 
     private func transitionToNextScene() {
-        let nextScene = KidScaredScene(size: self.size)
-        nextScene.scaleMode = .aspectFill
-        self.view?.presentScene(nextScene, transition: .fade(withDuration: 0.5))
+        navigateTo(.kidScared)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

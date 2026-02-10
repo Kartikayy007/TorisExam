@@ -96,9 +96,9 @@ class BedroomScene: BaseScene {
         robot.texture = SKTexture(imageNamed: "RoboScared")
 
         dialogues = [
-            ("", "AHHHH!!!"),
-            ("", "Ugh... What!!! im late..."),
-            ("", "I have a exam too of Object oriented programing OOPS"),
+            ("Tori", "AHHHH!!!"),
+            ("Tori", "Ugh... What!!! im late..."),
+            ("Tori", "I have a exam too of Object oriented programing OOPS"),
         ]
         currentDialogIndex = 0
         showCurrentDialogue()
@@ -141,15 +141,11 @@ class BedroomScene: BaseScene {
     }
 
     private func transitionToClock() {
-        let clockScene = ClockScene(size: self.size)
-        clockScene.scaleMode = .aspectFill
-        self.view?.presentScene(clockScene, transition: .fade(withDuration: 0.5))
+        navigateTo(.clock)
     }
 
     private func transitionToRobotIntro() {
-        let robotScene = RobotIntroScene(size: self.size)
-        robotScene.scaleMode = .aspectFill
-        self.view?.presentScene(robotScene, transition: .fade(withDuration: 1.0))
+        navigateTo(.robotIntro)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

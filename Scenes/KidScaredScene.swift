@@ -25,7 +25,7 @@ class KidScaredScene: BaseScene {
 
         boy = SKSpriteNode(imageNamed: "Sitting")
         boy.position = CGPoint(x: size.width / 2, y: size.height / 2)
-        boy.zPosition = 0
+        boy.zPosition = 5
         let scaleX = size.width / boy.size.width
         let scaleY = size.height / boy.size.height
         boy.setScale(max(scaleX, scaleY))
@@ -59,7 +59,7 @@ class KidScaredScene: BaseScene {
         scribble.strokeColor = .white
         scribble.lineWidth = 2
         scribble.position = position
-        scribble.zPosition = 10
+        scribble.zPosition = 1
         gameLayer.addChild(scribble)
 
         let path1 = createJaggedPath(radius: radius, jitter: 10)
@@ -113,13 +113,11 @@ class KidScaredScene: BaseScene {
     }
 
     private func showDialog() {
-        dialogBox.showDialog(name: "", text: "What am I going to do!!")
+        dialogBox.showDialog(name: "Tori", text: "What am I going to do!!")
     }
 
     private func transitionToRobotIdea() {
-        let nextScene = RobotIdeaScene(size: self.size)
-        nextScene.scaleMode = .aspectFill
-        self.view?.presentScene(nextScene, transition: .fade(withDuration: 0.5))
+        navigateTo(.robotIdea)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

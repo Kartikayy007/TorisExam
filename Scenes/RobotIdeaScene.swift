@@ -72,7 +72,7 @@ class RobotIdeaScene: BaseScene {
     }
 
     private func transitionToNextScene() {
-        // TODO: Transition to Blueprint/Hub scene
+        navigateTo(.thankYou)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

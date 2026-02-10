@@ -63,6 +63,10 @@ class BaseScene: SKScene {
         view.presentScene(newScene)
     }
 
+    func navigateTo(_ sceneType: SceneType) {
+        SceneNavigator.shared.navigateTo(sceneType, from: self.view)
+    }
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)

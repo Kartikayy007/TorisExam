@@ -53,7 +53,7 @@ class ClockScene: BaseScene {
 
     private func startAlarm() {
 
-        dialogBox.showDialog(name: "", text: "RING RING RING! 🔔")
+        dialogBox.showDialog(name: "Tori", text: "RING RING RING! 🔔")
 
         let rotateLeft = SKAction.rotate(byAngle: 0.15, duration: 0.05)
         let rotateRight = SKAction.rotate(byAngle: -0.3, duration: 0.1)
@@ -70,9 +70,7 @@ class ClockScene: BaseScene {
 
     private func returnToBedroom() {
         clock.removeAllActions()
-        let bedroomScene = BedroomScene(size: self.size, isPostAlarm: true)
-        bedroomScene.scaleMode = .aspectFill
-        self.view?.presentScene(bedroomScene, transition: .fade(withDuration: 0.5))
+        navigateTo(.bedroomPostAlarm)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

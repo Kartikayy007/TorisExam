@@ -9,7 +9,6 @@ import SwiftUI
 
 struct PauseMenuView: View {
     let onResume: () -> Void
-    let onRestart: () -> Void
     let onQuit: () -> Void
 
     @State private var isVisible = false
@@ -37,11 +36,6 @@ struct PauseMenuView: View {
                         onResume()
                     }
                     .buttonStyle(MenuButtonStyle(color: .blue))
-
-                    Button("Restart") {
-                        onRestart()
-                    }
-                    .buttonStyle(MenuButtonStyle(color: .orange))
 
                     Button("Quit to Menu") {
                         onQuit()
@@ -79,5 +73,5 @@ struct MenuButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    PauseMenuView(onResume: {}, onRestart: {}, onQuit: {})
+    PauseMenuView(onResume: {}, onQuit: {})
 }
