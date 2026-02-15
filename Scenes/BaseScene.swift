@@ -19,10 +19,20 @@ class BaseScene: SKScene {
 
     var gameLayer: SKEffectNode!
     var isGamePaused = false
+    private var hasSetup = false
 
     override func didMove(to view: SKView) {
         super.didMove(to: view)
+        
+        guard !hasSetup else { return }
+        hasSetup = true
         setupBaseLayers()
+        sceneDidSetup()
+    }
+
+    
+    func sceneDidSetup() {
+        
     }
 
     private func setupBaseLayers() {

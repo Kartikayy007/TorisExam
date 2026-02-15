@@ -15,8 +15,7 @@ class RobotIdeaScene: BaseScene {
     private var dialogues: [String] = []
     private var currentIndex = 0
 
-    override func didMove(to view: SKView) {
-        super.didMove(to: view)
+    override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
         startDialogSequence()

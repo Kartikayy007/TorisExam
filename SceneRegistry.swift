@@ -18,6 +18,7 @@ enum SceneType: Int, CaseIterable {
     case oopIntro = 7
     case closet = 8
     case blueprint = 9
+    case kitchen = 10
 
     var displayName: String {
         switch self {
@@ -31,6 +32,7 @@ enum SceneType: Int, CaseIterable {
         case .oopIntro: return "OOP Introduction"
         case .closet: return "Closet Mini-Game"
         case .blueprint: return "Blueprint Hub"
+        case .kitchen: return "Kitchen Mini-Game"
         }
     }
 
@@ -64,18 +66,20 @@ enum SceneType: Int, CaseIterable {
             return ClosetScene(size: size)
         case .blueprint:
             return BlueprintScene(size: size)
+        case .kitchen:
+            return KitchenScene(size: size)
         }
     }
 
     static var first: SceneType { .bedroom }
-    static var last: SceneType { .blueprint }
+    static var last: SceneType { .kitchen }
 }
 
 @MainActor
 class SceneNavigator {
     static let shared = SceneNavigator()
 
-    private(set) var currentSceneType: SceneType = .bedroom
+    var currentSceneType: SceneType = .bedroom
     private(set) var history: [SceneType] = []
 
     private init() {}
@@ -83,6 +87,9 @@ class SceneNavigator {
     func navigateTo(_ sceneType: SceneType, from view: SKView?) {
         history.append(currentSceneType)
         currentSceneType = sceneType
+
+        // Save checkpoint
+        CheckpointManager.shared.saveScene(sceneType.rawValue)
 
         let newScene = sceneType.createScene(size: CGSize(width: 1920, height: 1080))
         newScene.scaleMode = .aspectFill

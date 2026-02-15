@@ -14,8 +14,7 @@ class ClockScene: BaseScene {
     private var clock: SKSpriteNode!
     private var dialogBox: DialogBox!
 
-    override func didMove(to view: SKView) {
-        super.didMove(to: view)
+    override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
         startAlarm()

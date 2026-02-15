@@ -34,8 +34,7 @@ class BedroomScene: BaseScene {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func didMove(to view: SKView) {
-        super.didMove(to: view)
+    override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
 

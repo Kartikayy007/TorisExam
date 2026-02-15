@@ -32,7 +32,7 @@ struct GamePlayView: View {
     var body: some View {
         ZStack {
             if let scene = gameState.currentScene {
-                SpriteView(scene: scene)
+                PersistentSpriteView(scene: scene)
                     .ignoresSafeArea()
             }
 
@@ -65,6 +65,11 @@ struct GamePlayView: View {
                     onQuit: {
                         withAnimation(.easeIn(duration: 0.2)) {
                             gameState.quitToMainMenu()
+                        }
+                    },
+                    onReset: {
+                        withAnimation(.easeIn(duration: 0.2)) {
+                            gameState.resetProgress()
                         }
                     }
                 )

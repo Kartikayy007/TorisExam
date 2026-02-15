@@ -5,7 +5,6 @@
 //  Created by kartikay on 08/02/26
 //
 
-
 import SpriteKit
 import SwiftUI
 
@@ -26,15 +25,14 @@ class OOPIntroScene: BaseScene {
         "You might be thinking... what are Classes and Objects? Let's learn as you get your clothes ready!",
     ]
 
-    override func didMove(to view: SKView) {
-        super.didMove(to: view)
+    override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
         showCurrentDialog()
     }
 
     private func setupScene() {
-        
+
         bgBlurNode = SKEffectNode()
         bgBlurNode.shouldRasterize = true
         bgBlurNode.filter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 8])
@@ -47,7 +45,6 @@ class OOPIntroScene: BaseScene {
         bgBlurNode.addChild(roomBg)
         gameLayer.addChild(bgBlurNode)
 
-        
         blurOverlay = SKShapeNode(rectOf: CGSize(width: size.width * 2, height: size.height * 2))
         blurOverlay.fillColor = SKColor(red: 0, green: 0, blue: 0, alpha: 0.4)
         blurOverlay.strokeColor = .clear
@@ -57,7 +54,6 @@ class OOPIntroScene: BaseScene {
         gameLayer.addChild(blurOverlay)
         blurOverlay.run(SKAction.fadeIn(withDuration: 0.5))
 
-        
         robotOverlay = SKSpriteNode(imageNamed: "roboexplain")
         robotOverlay.position = CGPoint(x: size.width / 2, y: size.height * 0.65)
         robotOverlay.zPosition = 5
@@ -116,7 +112,6 @@ class OOPIntroScene: BaseScene {
         dialogBox.hideDialog()
         blurOverlay.run(fadeOut)
 
-        
         bgBlurNode.filter = nil
 
         let fadeIn = SKAction.fadeIn(withDuration: 0.5)

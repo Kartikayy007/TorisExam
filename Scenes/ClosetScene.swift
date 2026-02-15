@@ -51,8 +51,7 @@ class ClosetScene: BaseScene {
     private var introComplete = false
     private var outfitComplete = false
 
-    override func didMove(to view: SKView) {
-        super.didMove(to: view)
+    override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
         showIntro()
@@ -72,6 +71,8 @@ class ClosetScene: BaseScene {
         let dropW = tori.size.width * toriScale * 0.4
         let dropH = tori.size.height * toriScale * 1.5
         toriDropZone = SKShapeNode(rectOf: CGSize(width: dropW, height: dropH), cornerRadius: 8)
+        toriDropZone.fillColor = .clear
+        toriDropZone.strokeColor = .clear
 
         let visualOffset = -tori.size.width * toriScale * 0.35
 
@@ -143,7 +144,6 @@ class ClosetScene: BaseScene {
         codePanel.zPosition = 5
         gameLayer.addChild(codePanel)
 
-        
         codeCropNode = SKCropNode()
         let maskNode = SKShapeNode(rectOf: CGSize(width: panelWidth - 20, height: panelHeight - 40))
         maskNode.fillColor = .white
@@ -189,13 +189,10 @@ class ClosetScene: BaseScene {
     private func updateCodeDisplay() {
         var code = ""
 
-        
-        code += "
         code += "class Clothing {\n"
-        code += "  
         code += "  var color: String\n"
         code += "  var size: String\n"
-        code += "\n  
+        code += "\n"
         code += "  func tryOn() {\n"
         code += "    print(\"Trying on!\")\n"
         code += "  }\n"
@@ -203,34 +200,22 @@ class ClosetScene: BaseScene {
 
         if let idx = selectedPantIndex {
             let pantColors = ["Blue", "Blue", "Light Blue"]
-            code += "\n\n
-            code += "let myPants = Clothing()\n"
+            code += "\n\nlet myPants = Clothing()\n"
             code += "myPants.color = \"\(pantColors[idx])\"\n"
             code += "myPants.size = \"\(pantLabels[idx])\"\n"
             code += "myPants.tryOn()"
-            if idx == 1 {
-                code += " 
-            } else {
-                code += " 
-            }
         }
 
         if let idx = selectedShirtIndex {
             let shirtColors = ["Red", "Blue", "Yellow"]
-            code += "\n\n
-            code += "let myShirt = Clothing()\n"
+            code += "\n\nlet myShirt = Clothing()\n"
             code += "myShirt.color = \"\(shirtColors[idx])\"\n"
             code += "myShirt.size = \"\(shirtLabels[idx])\"\n"
             code += "myShirt.tryOn()"
-            if idx == 2 {
-                code += " 
-            } else {
-                code += " 
-            }
         }
 
         if selectedPantIndex == 1 && selectedShirtIndex == 2 {
-            code += "\n\n
+            code += "\n\n// Tori is ready!"
         }
 
         codeLabel.text = code
@@ -241,7 +226,8 @@ class ClosetScene: BaseScene {
         roboExplain.run(SKAction.fadeIn(withDuration: 0.3))
         dialogBox.showDialog(
             name: "Robot",
-            text: "Before we start, let me teach you something! A CLASS is like a blueprint — it describes what something IS."
+            text:
+                "Before we start, let me teach you something! A CLASS is like a blueprint — it describes what something IS."
         )
     }
 
@@ -251,27 +237,32 @@ class ClosetScene: BaseScene {
         case 1:
             dialogBox.showDialog(
                 name: "Robot",
-                text: "For example, 'Clothing' is a class. It's the idea of clothing — not any specific shirt or pants, just the concept!"
+                text:
+                    "For example, 'Clothing' is a class. It's the idea of clothing — not any specific shirt or pants, just the concept!"
             )
         case 2:
             dialogBox.showDialog(
                 name: "Robot",
-                text: "A class has PROPERTIES — these are the details. Clothing has 'color' and 'size'. Properties describe what an object HAS."
+                text:
+                    "A class has PROPERTIES — these are the details. Clothing has 'color' and 'size'. Properties describe what an object HAS."
             )
         case 3:
             dialogBox.showDialog(
                 name: "Robot",
-                text: "An OBJECT is a real thing made from a class. 'Clothing' is the blueprint, but Tori's blue pants? That's an object!"
+                text:
+                    "An OBJECT is a real thing made from a class. 'Clothing' is the blueprint, but Tori's blue pants? That's an object!"
             )
         case 4:
             dialogBox.showDialog(
                 name: "Robot",
-                text: "Classes also have METHODS — these are actions! Our Clothing class has a tryOn() method. Methods describe what an object CAN DO."
+                text:
+                    "Classes also have METHODS — these are actions! Our Clothing class has a tryOn() method. Methods describe what an object CAN DO."
             )
         case 5:
             dialogBox.showDialog(
                 name: "Robot",
-                text: "So to recap: CLASS = blueprint, OBJECT = real thing, PROPERTIES = what it has, METHODS = what it can do!"
+                text:
+                    "So to recap: CLASS = blueprint, OBJECT = real thing, PROPERTIES = what it has, METHODS = what it can do!"
             )
         case 6:
             introComplete = true
@@ -279,7 +270,8 @@ class ClosetScene: BaseScene {
             glowHitboxes(pantHitboxes)
             dialogBox.showDialog(
                 name: "Robot",
-                text: "Let's try it! Drag a pair of PANTS from the closet onto Tori. Find the right size!"
+                text:
+                    "Let's try it! Drag a pair of PANTS from the closet onto Tori. Find the right size!"
             )
         default:
             dialogBox.hideDialog()
@@ -292,7 +284,6 @@ class ClosetScene: BaseScene {
 
         if isGamePaused { return }
 
-        
         let panelLocation = touch.location(in: codePanel)
         if abs(panelLocation.x) < codePanelWidth / 2 && abs(panelLocation.y) < codePanelHeight / 2 {
             isScrollingCodePanel = true
@@ -300,7 +291,6 @@ class ClosetScene: BaseScene {
             return
         }
 
-        
         guard introComplete && !outfitComplete else {
             dialogBox.handleTap()
             return
@@ -329,7 +319,7 @@ class ClosetScene: BaseScene {
             if let name = node.name, name.starts(with: "shirt_"),
                 let idx = Int(String(name.last!))
             {
-                
+
                 guard selectedPantIndex == 1 else {
                     dialogBox.showDialog(
                         name: "Robot",
@@ -364,7 +354,7 @@ class ClosetScene: BaseScene {
         if isScrollingCodePanel {
             let delta = location.y - lastScrollY
             codeContentNode.position.y -= delta
-            
+
             let maxScroll = max(0, codeLabel.frame.height - codePanelHeight + 60)
             codeContentNode.position.y = max(0, min(maxScroll, codeContentNode.position.y))
             lastScrollY = location.y
@@ -445,7 +435,7 @@ class ClosetScene: BaseScene {
         updateCodeDisplay()
 
         if index == 1 {
-            
+
             showConfetti()
             glowHitboxes(shirtHitboxes)
             dialogBox.showDialog(
@@ -478,66 +468,53 @@ class ClosetScene: BaseScene {
 
             let pulse = SKAction.sequence([
                 SKAction.fadeAlpha(to: 0.7, duration: 0.5),
-                SKAction.fadeAlpha(to: 0.2, duration: 0.5)
+                SKAction.fadeAlpha(to: 0.2, duration: 0.5),
             ])
-            glowContainer.run(SKAction.sequence([
-                SKAction.repeat(pulse, count: 3),
-                SKAction.fadeOut(withDuration: 0.3),
-                SKAction.removeFromParent()
-            ]))
+            glowContainer.run(
+                SKAction.sequence([
+                    SKAction.repeat(pulse, count: 3),
+                    SKAction.fadeOut(withDuration: 0.3),
+                    SKAction.removeFromParent(),
+                ]))
         }
     }
 
     private func showConfetti() {
         let colors: [SKColor] = [
-            SKColor(red: 1.0, green: 0.2, blue: 0.3, alpha: 1),
-            SKColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1),
-            SKColor(red: 0.2, green: 0.8, blue: 1.0, alpha: 1),
-            SKColor(red: 0.3, green: 1.0, blue: 0.4, alpha: 1),
-            SKColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1),
-            SKColor(red: 0.8, green: 0.3, blue: 1.0, alpha: 1),
-            SKColor(red: 1.0, green: 0.4, blue: 0.7, alpha: 1),
+            .systemRed, .systemYellow, .systemCyan,
+            .systemGreen, .systemOrange, .systemPurple, .systemPink,
         ]
 
-        let shapes: [(CGFloat, CGFloat)] = [
-            (10, 10), (6, 14), (12, 6), (8, 8), (5, 12)
-        ]
-
-        for i in 0..<50 {
-            let shape = shapes[i % shapes.count]
-            let confetti = SKShapeNode(rectOf: CGSize(width: shape.0, height: shape.1), cornerRadius: 2)
-            confetti.fillColor = colors[i % colors.count]
-            confetti.strokeColor = .clear
-            confetti.zRotation = CGFloat.random(in: 0...CGFloat.pi * 2)
-
-            let startX = CGFloat.random(in: size.width * 0.05...size.width * 0.95)
-            confetti.position = CGPoint(x: startX, y: size.height + CGFloat.random(in: 10...60))
+        for i in 0..<30 {
+            let confetti = SKSpriteNode(
+                color: colors[i % colors.count],
+                size: CGSize(
+                    width: CGFloat.random(in: 6...12),
+                    height: CGFloat.random(in: 6...14)))
+            confetti.position = CGPoint(
+                x: CGFloat.random(in: size.width * 0.05...size.width * 0.95),
+                y: size.height + 30
+            )
             confetti.zPosition = 200
+            confetti.zRotation = CGFloat.random(in: 0...CGFloat.pi * 2)
             gameLayer.addChild(confetti)
 
-            let delay = Double.random(in: 0...1.0)
-            let dur = Double.random(in: 1.8...3.5)
-            let driftX = CGFloat.random(in: -100...100)
-            let fallY = -size.height * CGFloat.random(in: 0.8...1.3)
+            let delay = Double.random(in: 0...0.8)
+            let dur = Double.random(in: 1.5...2.5)
 
-            let path = UIBezierPath()
-            path.move(to: .zero)
-            let cp1 = CGPoint(x: driftX * 0.4, y: fallY * 0.25)
-            let cp2 = CGPoint(x: -driftX * 0.3, y: fallY * 0.65)
-            path.addCurve(to: CGPoint(x: driftX * 0.5, y: fallY), controlPoint1: cp1, controlPoint2: cp2)
+            let fall = SKAction.moveBy(
+                x: CGFloat.random(in: -80...80),
+                y: -size.height * 1.1,
+                duration: dur)
+            fall.timingMode = .easeIn
+            let spin = SKAction.rotate(byAngle: CGFloat.random(in: -6...6), duration: dur)
+            let fade = SKAction.fadeOut(withDuration: dur * 0.3)
 
-            let follow = SKAction.follow(path.cgPath, asOffset: true, orientToPath: false, duration: dur)
-            follow.timingMode = .easeIn
-            let spin = SKAction.rotate(byAngle: CGFloat.random(in: -8...8), duration: dur)
-            let fade = SKAction.sequence([
-                SKAction.wait(forDuration: dur * 0.6),
-                SKAction.fadeOut(withDuration: dur * 0.4)
-            ])
-            let group = SKAction.group([follow, spin, fade])
             let seq = SKAction.sequence([
                 SKAction.wait(forDuration: delay),
-                group,
-                SKAction.removeFromParent()
+                SKAction.group([fall, spin]),
+                fade,
+                SKAction.removeFromParent(),
             ])
             confetti.run(seq)
         }
@@ -564,7 +541,8 @@ class ClosetScene: BaseScene {
                 showConfetti()
                 dialogBox.showDialog(
                     name: "Robot",
-                    text: "Perfect fit! See how we created OBJECTS from the Clothing CLASS, set their PROPERTIES, and called the tryOn() METHOD?"
+                    text:
+                        "Perfect fit! See how we created OBJECTS from the Clothing CLASS, set their PROPERTIES, and called the tryOn() METHOD?"
                 )
                 dialogBox.onDialogComplete = { [weak self] in
                     self?.showPackLunchDialog()
@@ -591,12 +569,7 @@ class ClosetScene: BaseScene {
     }
 
     private func goToNextScene() {
-        
-        if let gameState = (self.view?.window?.rootViewController as? UIHostingController<ContentView>)?.rootView {
-            
-        }
-        dialogBox.hideDialog()
-        
+        navigateTo(.kitchen)
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {
