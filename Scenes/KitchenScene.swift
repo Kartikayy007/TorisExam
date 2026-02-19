@@ -22,7 +22,6 @@ class KitchenScene: BaseScene {
     private var currentPhase: Phase = .intro
     private var currentStep = 0
 
-    
     private var dialogBox: DialogBox!
     private var roboExplain: SKSpriteNode!
     private var codePanel: SKShapeNode!
@@ -32,11 +31,9 @@ class KitchenScene: BaseScene {
     private var codePanelWidth: CGFloat = 0
     private var codePanelHeight: CGFloat = 0
 
-    
     private var isScrollingCodePanel = false
     private var lastScrollY: CGFloat = 0
 
-    
     private var breadBottom: SKSpriteNode!
     private var breadTop: SKSpriteNode!
     private var ingredientSlots: [SKSpriteNode] = []
@@ -45,43 +42,45 @@ class KitchenScene: BaseScene {
     private var sandwichDone = false
     private var placedIngredientCount = 0
 
-    
-    private enum PopupState { case none, painting }
+    private enum PopupState { case none, painting, boiling }
     private var popupState: PopupState = .none
 
     private var popupOverlay: SKShapeNode?
     private var currentPopupItem: String?
-    private var colorCropNode: SKCropNode?  
-    private var paintMaskNode: SKNode?  
-    private var paintStrokeCount: Int = 0  
-    private var paintThreshold: Int = 180  
+    private var colorCropNode: SKCropNode?
+    private var paintMaskNode: SKNode?
+    private var paintStrokeCount: Int = 0
+    private var paintThreshold: Int = 180
     private var isPainting: Bool = false
     private var lastPaintPoint: CGPoint? = nil
-    private var paintedCells: Set<String> = []  
+    private var paintedCells: Set<String> = []
     private var progressBar: SKShapeNode?
     private var progressFill: SKShapeNode?
 
-    
+    private var gaugeKnob: SKShapeNode?
+    private var gaugeTrack: SKShapeNode?
+    private var boilingProgress: CGFloat = 0.0
+    private var normalWaterSprite: SKSpriteNode?
+    private var boilingWaterSprite: SKSpriteNode?
+    private var boilingOverlay: SKShapeNode?
+    private var isDraggingGauge = false
+
     private var platformIngredients: [String: SKSpriteNode] = [:]
 
-    
     private var ingredientsAdded: [String] = []
     private var ingredientButtons: [SKSpriteNode] = []
     private var solidIngredients: [SKSpriteNode] = []
 
-    
     private var pastaRecipeSteps: [String] = []
     private var currentRecipeIndex = 0
     private var completedStepCount = 0
     private var recipeContainer: SKNode!
     private var autoPlaying = false
 
-    
     private var prepareButton: SKShapeNode!
     private var prepItems: [SKLabelNode] = []
     private var currentPrepItem = 0
 
-    
     private var stepButtons: [SKNode] = []
     private var packLunchButton: SKShapeNode!
     private var draggedStepButton: SKNode?
@@ -92,41 +91,26 @@ class KitchenScene: BaseScene {
 
     override func sceneDidSetup() {
 
-        
         let bg = SKSpriteNode(imageNamed: "kitchenbg")
         bg.position = CGPoint(x: size.width / 2, y: size.height / 2)
         bg.zPosition = -10
         bg.size = size
         gameLayer.addChild(bg)
 
-        
         let platform = SKSpriteNode(imageNamed: "kitchenplatform")
-        
+
         platform.position = CGPoint(x: size.width * 0.45, y: size.height * 0.3)
         platform.zPosition = -5
         platform.setScale(0.85)
         platform.zRotation = CGFloat.pi / 2
         gameLayer.addChild(platform)
 
-        
-        debugDrawAreas()
-
         setupCodePanel()
         setupDialogBox()
         updateCodeDisplay()
 
-        
-        let savedIngredients = CheckpointManager.shared.savedKitchenIngredients()
-        if !savedIngredients.isEmpty {
-            
-            startEncapsulationPhase()
-            restoreSavedIngredients(savedIngredients)
-        } else {
-            showIntro()
-        }
+        showIntro()
     }
-
-    
 
     private func setupCodePanel() {
         let panelWidth = size.width * 0.35
@@ -139,8 +123,8 @@ class KitchenScene: BaseScene {
         codePanel.fillColor = SKColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 0.95)
         codePanel.strokeColor = SKColor(red: 0.3, green: 0.5, blue: 0.8, alpha: 0.8)
         codePanel.lineWidth = 2
-        
-        codePanel.position = CGPoint(x: size.width * 0.68, y: size.height * 0.55)
+
+        codePanel.position = CGPoint(x: size.width * 0.68, y: size.height * 0.6)
         codePanel.zPosition = 5
         gameLayer.addChild(codePanel)
 
@@ -180,119 +164,83 @@ class KitchenScene: BaseScene {
         gameLayer.addChild(roboExplain)
     }
 
-    private func debugDrawAreas() {
-        
-        let p = SKShapeNode(rectOf: CGSize(width: size.width, height: 10), cornerRadius: 0)
-        p.strokeColor = .red
-        p.lineWidth = 5
-        p.position = CGPoint(x: size.width / 2, y: size.height * 0.3)
-        p.zPosition = 200
-        gameLayer.addChild(p)
-
-        
-        let s = SKShapeNode(rectOf: CGSize(width: 150, height: 150), cornerRadius: 0)
-        s.strokeColor = .green
-        s.lineWidth = 5
-        s.position = CGPoint(x: size.width * 0.20, y: size.height * 0.43)
-        s.zPosition = 200
-        gameLayer.addChild(s)
-
-        let label = SKLabelNode(text: "BREAD")
-        label.fontSize = 20
-        label.position = CGPoint(x: 0, y: 80)
-        s.addChild(label)
-
-        
-        let startX = size.width * 0.35
-        let tableY = size.height * 0.43
-        for i in 0..<3 {
-            let zone = SKShapeNode(rectOf: CGSize(width: 100, height: 100))
-            zone.strokeColor = .yellow
-            zone.lineWidth = 4
-            zone.position = CGPoint(x: startX + CGFloat(i) * 120, y: tableY)
-            zone.zPosition = 200
-            gameLayer.addChild(zone)
-
-            let lbl = SKLabelNode(text: "ING_\(i)")
-            lbl.fontSize = 15
-            lbl.position = CGPoint(x: 0, y: 60)
-            zone.addChild(lbl)
-        }
-    }
-
-    
-
     private func updateCodeDisplay() {
         var code = ""
         switch currentPhase {
         case .intro:
-            code = "
-            code += "
-            code += "
-            code += "
-            code += "
+            code = "// The 4 Pillars of OOP\n\n"
+            code += "// 1. Encapsulation\n"
+            code += "// 2. Inheritance\n"
+            code += "// 3. Polymorphism\n"
+            code += "// 4. Abstraction"
 
         case .encapsulation:
             code = "class Sandwich {\n"
-            code += "  
+            code += "  // Ingredients ENCAPSULATED (Hidden)\n"
 
             for item in ingredientsAdded {
                 code += "  private var \(item): Ingredient 🔒\n"
             }
 
             if ingredientsAdded.count < 3 {
-                code += "  
+                code += "  // ... add more ingredients\n"
             }
 
             code += "  func eat() {\n"
-            code += "    
+            code += "    // Access hidden data internally\n"
             code += "  }\n"
             code += "}"
 
             if sandwichDone {
                 code += "\n\nlet lunch = Sandwich()\n"
-                code += "
+                code += "// Ingredients are PRIVATE"
             }
 
         case .inheritance:
             if currentRecipeIndex == 0 {
                 code = "class BasicPasta {\n"
+                for step in pastaRecipeSteps {
+                    code += "  func \(step) { }\n"
+                }
+                if pastaRecipeSteps.count < 4 {
+                    code += "  // ... more steps to go\n"
+                }
+                code += "}\n"
+            } else {
+                code = "class BasicPasta {\n"
                 code += "  func boilWater() { }\n"
                 code += "  func addPasta()  { }\n"
                 code += "  func drain()     { }\n"
                 code += "  func serve()     { }\n"
-                code += "}\n"
-            } else if currentRecipeIndex == 1 {
-                code = "class MacAndCheese: BasicPasta {\n"
-                code += "  
-                code += "  
-                code += "  
-                code += "  
-                code += "  func addCheese() { } 
-                code += "}\n"
-            } else {
-                code = "class SpicyPasta: MacAndCheese {\n"
-                code += "  
-                code += "  
-                code += "  func addVeggies() { } 
-                code += "  func addSpice()   { } 
+                code += "}\n\n"
+                code += "// Child inherits from Parent:\n"
+                code += "class MacAndCheese: BasicPasta {\n"
+                code += "  // boilWater()  inherited\n"
+                code += "  // addPasta()   inherited\n"
+                code += "  // drain()      inherited\n"
+                code += "  // serve()      inherited\n"
+                if completedStepCount >= 5 {
+                    code += "  func addCheese() { } // NEW!\n"
+                } else {
+                    code += "  // ... add your own step!\n"
+                }
                 code += "}\n"
             }
 
         case .polymorphism:
-            code = "
-            code += "
+            code = "// Same method name,\n"
+            code += "// different behavior!\n\n"
             if currentPrepItem >= 1 {
                 code += "sandwich.prepare()\n"
-                code += "  
+                code += "  // → cuts in half \n\n"
             }
             if currentPrepItem >= 2 {
                 code += "apple.prepare()\n"
-                code += "  
+                code += "  // → washes clean \n\n"
             }
             if currentPrepItem >= 3 {
                 code += "juice.prepare()\n"
-                code += "  
+                code += "  // → shakes up \n"
             }
 
         case .abstraction:
@@ -304,34 +252,34 @@ class KitchenScene: BaseScene {
             }
             code += "}\n\n"
             if absorbedCount >= stepMethods.count {
-                code += "
-                code += "packLunch() 
+                code += "// One simple call!\n"
+                code += "packLunch() // Done!"
             }
 
         case .done:
-            code = "
-            code += "
-            code += "
-            code += "
-            code += "
-            code += "
+            code = "// All 4 Pillars Complete!\n\n"
+            code += "// Encapsulation\n"
+            code += "// Inheritance\n"
+            code += "// Polymorphism\n"
+            code += "// Abstraction\n\n"
+            code += "// Tori's lunch is packed!"
         }
         codeLabel.text = code
         codeContentNode.position.y = 0
     }
 
-    
-
     private func showIntro() {
         roboExplain.run(SKAction.fadeIn(withDuration: 0.3))
         dialogBox.showDialog(
             name: "Robot",
-            text: "Welcome to the Kitchen! Let's pack Tori's lunch and learn the 4 PILLARS of OOP!"
+            text:
+                "Welcome to the Kitchen! Let's pack Tori's lunch and learn the 4 pillars of OOP!"
         )
         dialogBox.onDialogComplete = { [weak self] in
             self?.dialogBox.showDialog(
                 name: "Robot",
-                text: "First up — let's make a sandwich! This will teach us ENCAPSULATION!"
+                text:
+                    "First up: ENCAPSULATION! It means bundling data together and hiding it inside a class — so nothing outside can mess with it."
             )
             self?.dialogBox.onDialogComplete = { [weak self] in
                 self?.roboExplain.run(SKAction.fadeOut(withDuration: 0.3))
@@ -339,8 +287,6 @@ class KitchenScene: BaseScene {
             }
         }
     }
-
-    
 
     private func startEncapsulationPhase() {
         currentPhase = .encapsulation
@@ -350,17 +296,16 @@ class KitchenScene: BaseScene {
         popupState = .none
         platformIngredients.removeAll()
 
-        
-        let centerX = size.width * 0.20
-        let centerY = size.height * 0.43
-        sandwichZone = CGPoint(x: centerX, y: centerY)
+        let lineY = size.height * 0.43
+        let startX = size.width * 0.18
+        let spacing = size.width * 0.08
+        sandwichZone = CGPoint(x: size.width * 0.25, y: lineY)
 
-        
         let plateLabel = SKLabelNode(fontNamed: "Menlo")
-        plateLabel.text = "Sandwich Builder"
+        //        plateLabel.text = "Sandwich Builder"
         plateLabel.fontSize = 14
         plateLabel.fontColor = .darkGray
-        plateLabel.position = CGPoint(x: centerX, y: centerY - 120)
+        plateLabel.position = CGPoint(x: size.width * 0.25, y: lineY - 120)
         plateLabel.zPosition = 10
         plateLabel.name = "plateLabel"
         gameLayer.addChild(plateLabel)
@@ -368,52 +313,23 @@ class KitchenScene: BaseScene {
         dialogBox.showDialog(
             name: "Robot",
             text:
-                "Encapsulation! Each ingredient is PRIVATE. Tap one to trace its outline and reveal it!"
+                "Let's prep the sandwich ingredients! Tap each one and paint it to get it ready."
         )
 
-        
-        let bread = SKSpriteNode(imageNamed: "bread")
-        bread.setScale(0.35)
-        bread.position = CGPoint(x: centerX, y: centerY - 30)
-        bread.zPosition = 15
-        bread.name = "platform_bread"
-        bread.color = .gray
-        bread.colorBlendFactor = 1.0
-        bread.alpha = 0.4
-        gameLayer.addChild(bread)
-        platformIngredients["bread"] = bread
-        bread.run(
-            SKAction.repeatForever(
-                SKAction.sequence([
-                    SKAction.fadeAlpha(to: 0.6, duration: 1.0),
-                    SKAction.fadeAlpha(to: 0.4, duration: 1.0),
-                ])))
-
-        
-        let ingredients = ["cheese", "tomato", "spinach"]
-        let positions = [
-            CGPoint(x: centerX - 120, y: centerY + 50),
-            CGPoint(x: centerX, y: centerY + 70),
-            CGPoint(x: centerX + 120, y: centerY + 50),
-        ]
-
-        for i in 0..<ingredients.count {
-            let item = ingredients[i]
+        let allItems = ["bread", "cheese", "tomato", "spinach"]
+        for i in 0..<allItems.count {
+            let item = allItems[i]
             let sprite = SKSpriteNode(imageNamed: item)
             sprite.setScale(0.3)
-            sprite.position = positions[i]
-            sprite.zPosition = 16 + CGFloat(i)
+            sprite.position = CGPoint(x: startX + CGFloat(i) * spacing, y: lineY)
+            sprite.zPosition = 25 + CGFloat(i)
             sprite.name = "platform_\(item)"
-
-            
             sprite.color = .gray
             sprite.colorBlendFactor = 1.0
             sprite.alpha = 0.4
-
             gameLayer.addChild(sprite)
             platformIngredients[item] = sprite
 
-            
             sprite.run(
                 SKAction.repeatForever(
                     SKAction.sequence([
@@ -425,47 +341,20 @@ class KitchenScene: BaseScene {
         updateCodeDisplay()
     }
 
-    
-    private func restoreSavedIngredients(_ saved: [String]) {
-        for item in saved {
-            guard !ingredientsAdded.contains(item) else { continue }
-            ingredientsAdded.append(item)
-
-            
-            if let platformSprite = platformIngredients[item] {
-                platformSprite.removeAllActions()
-                platformSprite.alpha = 1.0
-                platformSprite.colorBlendFactor = 0.0
-
-                let check = SKLabelNode(text: "✅")
-                check.fontSize = 30
-                check.position = CGPoint(x: 0, y: -30)
-                check.verticalAlignmentMode = .center
-                check.zPosition = 5
-                platformSprite.addChild(check)
-            }
-        }
-        updateCodeDisplay()
-
-        
-        if ingredientsAdded.count >= 4 {
-            run(SKAction.wait(forDuration: 0.5)) { [weak self] in
-                self?.completeSandwich()
-            }
-        }
-    }
-
-    
-
     private func showTracingPopup(for item: String) {
         guard !ingredientsAdded.contains(item) else { return }
         currentPopupItem = item
         popupState = .painting
         paintedCells.removeAll()
-        paintThreshold = (item == "spinach") ? 180 : 100
+        if item == "bread" {
+            paintThreshold = 220
+        } else if item == "spinach" {
+            paintThreshold = 180
+        } else {
+            paintThreshold = 100
+        }
         isPainting = false
 
-        
         let overlay = SKShapeNode(rectOf: size)
         overlay.fillColor = SKColor(white: 0, alpha: 0.85)
         overlay.strokeColor = .clear
@@ -475,7 +364,6 @@ class KitchenScene: BaseScene {
         gameLayer.addChild(overlay)
         popupOverlay = overlay
 
-        
         let title = SKLabelNode(fontNamed: "Menlo-Bold")
         title.text = "Color \(item.capitalized) to Reveal!"
         title.fontSize = 28
@@ -485,17 +373,15 @@ class KitchenScene: BaseScene {
 
         let spriteScale: CGFloat = 1.8
 
-        
         let graySprite = SKSpriteNode(imageNamed: item)
         graySprite.setScale(spriteScale)
         graySprite.position = .zero
         graySprite.zPosition = 1001
         graySprite.color = .gray
-        graySprite.colorBlendFactor = 1.0  
+        graySprite.colorBlendFactor = 1.0
         graySprite.alpha = 0.8
         overlay.addChild(graySprite)
 
-        
         let cropNode = SKCropNode()
         cropNode.position = .zero
         cropNode.zPosition = 1002
@@ -507,12 +393,10 @@ class KitchenScene: BaseScene {
         coloredSprite.position = .zero
         cropNode.addChild(coloredSprite)
 
-        
         let mask = SKNode()
         cropNode.maskNode = mask
         paintMaskNode = mask
 
-        
         let barWidth: CGFloat = 200
         let barHeight: CGFloat = 12
         let barBg = SKShapeNode(rectOf: CGSize(width: barWidth, height: barHeight), cornerRadius: 6)
@@ -533,7 +417,6 @@ class KitchenScene: BaseScene {
         barBg.addChild(fill)
         progressFill = fill
 
-        
         let hint = SKLabelNode(fontNamed: "Menlo-Italic")
         hint.text = "Paint with your finger to reveal the color!"
         hint.fontSize = 16
@@ -541,7 +424,6 @@ class KitchenScene: BaseScene {
         hint.position = CGPoint(x: 0, y: -size.height * 0.4)
         overlay.addChild(hint)
 
-        
         addCloseButton(to: overlay)
     }
 
@@ -557,30 +439,237 @@ class KitchenScene: BaseScene {
         closeBtn.addChild(xLbl)
     }
 
-    
+    private func showBoilingPopup() {
+        popupState = .boiling
+        boilingProgress = 0.0
+        isDraggingGauge = false
+
+        let overlay = SKShapeNode(rectOf: size)
+        overlay.fillColor = SKColor(white: 0, alpha: 0.85)
+        overlay.strokeColor = .clear
+        overlay.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        overlay.zPosition = 1000
+        overlay.name = "boilingOverlay"
+        gameLayer.addChild(overlay)
+        boilingOverlay = overlay
+
+        let title = SKLabelNode(fontNamed: "Menlo-Bold")
+        title.text = "Boil the Water!"
+        title.fontSize = 32
+        title.fontColor = .white
+        title.position = CGPoint(x: 0, y: size.height * 0.35)
+        overlay.addChild(title)
+
+        let waterScale: CGFloat = 1.5
+        let waterX: CGFloat = -180
+
+        normalWaterSprite = SKSpriteNode(imageNamed: "normalwater")
+        normalWaterSprite?.setScale(waterScale)
+        normalWaterSprite?.position = CGPoint(x: waterX, y: 0)
+        normalWaterSprite?.zPosition = 1001
+        overlay.addChild(normalWaterSprite!)
+
+        boilingWaterSprite = SKSpriteNode(imageNamed: "boilingwater")
+        boilingWaterSprite?.setScale(waterScale)
+        boilingWaterSprite?.position = CGPoint(x: waterX, y: 0)
+        boilingWaterSprite?.zPosition = 1002
+        boilingWaterSprite?.alpha = 0
+        overlay.addChild(boilingWaterSprite!)
+
+        let gaugeWidth: CGFloat = 280
+        let gaugeHeight: CGFloat = 24
+        let gaugeX: CGFloat = 180
+        let gaugeY: CGFloat = 0
+
+        let trackContainer = SKNode()
+        trackContainer.position = CGPoint(x: gaugeX, y: gaugeY)
+        overlay.addChild(trackContainer)
+
+        let trackBg = SKShapeNode(
+            rectOf: CGSize(width: gaugeWidth, height: gaugeHeight), cornerRadius: 12)
+        trackBg.fillColor = SKColor(white: 0.2, alpha: 1)
+        trackBg.strokeColor = SKColor(white: 0.4, alpha: 1)
+        trackBg.lineWidth = 2
+        trackBg.zPosition = 1003
+        trackContainer.addChild(trackBg)
+
+        for i in 0...10 {
+            let segmentWidth = gaugeWidth / 11
+            let segment = SKShapeNode(
+                rectOf: CGSize(width: segmentWidth - 2, height: gaugeHeight - 6), cornerRadius: 4)
+            let t = CGFloat(i) / 10.0
+            segment.fillColor = SKColor(
+                red: t,
+                green: 0.3 * (1 - t) + 0.5 * t,
+                blue: 1.0 * (1 - t),
+                alpha: 0.8
+            )
+            segment.strokeColor = .clear
+            segment.position = CGPoint(
+                x: -gaugeWidth / 2 + segmentWidth / 2 + CGFloat(i) * segmentWidth, y: 0)
+            segment.zPosition = 1004
+            trackContainer.addChild(segment)
+        }
+
+        gaugeTrack = trackBg
+        trackBg.name = "gaugeTrack"
+
+        let knob = SKShapeNode(circleOfRadius: 22)
+        knob.fillColor = .white
+        knob.strokeColor = SKColor(red: 0.3, green: 0.3, blue: 0.8, alpha: 1)
+        knob.lineWidth = 4
+        knob.position = CGPoint(x: gaugeX - gaugeWidth / 2, y: gaugeY)
+        knob.zPosition = 1010
+        knob.name = "gaugeKnob"
+        overlay.addChild(knob)
+        gaugeKnob = knob
+
+        let knobLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        knobLabel.text = "🔥"
+        knobLabel.fontSize = 20
+        knobLabel.verticalAlignmentMode = .center
+        knobLabel.horizontalAlignmentMode = .center
+        knobLabel.zPosition = 1011
+        knob.addChild(knobLabel)
+
+        let tempLabel = SKLabelNode(fontNamed: "Menlo")
+        tempLabel.text = "0°C"
+        tempLabel.fontSize = 24
+        tempLabel.fontColor = .cyan
+        tempLabel.position = CGPoint(x: gaugeX, y: gaugeY - 60)
+        tempLabel.zPosition = 1005
+        tempLabel.name = "tempLabel"
+        overlay.addChild(tempLabel)
+
+        let hint = SKLabelNode(fontNamed: "Menlo-Italic")
+        hint.text = "Drag the slider to heat the water!"
+        hint.fontSize = 16
+        hint.fontColor = .gray
+        hint.position = CGPoint(x: gaugeX, y: gaugeY - 100)
+        overlay.addChild(hint)
+
+        addCloseButton(to: overlay)
+    }
+
+    private func updateBoilingProgress(_ progress: CGFloat) {
+        guard let knob = gaugeKnob,
+            let boiling = boilingWaterSprite,
+            let overlay = boilingOverlay
+        else { return }
+
+        boilingProgress = progress
+
+        let gaugeWidth: CGFloat = 280
+        let gaugeX: CGFloat = 180
+        let startX = gaugeX - gaugeWidth / 2
+        knob.position.x = startX + progress * gaugeWidth
+
+        boiling.alpha = progress
+
+        if let tempLabel = overlay.childNode(withName: "tempLabel") as? SKLabelNode {
+            let temp = Int(progress * 100)
+            tempLabel.text = "\(temp)°C"
+            if progress < 0.3 {
+                tempLabel.fontColor = .cyan
+            } else if progress < 0.7 {
+                tempLabel.fontColor = .yellow
+            } else {
+                tempLabel.fontColor = .orange
+            }
+        }
+
+        if progress > 0.6 && Bool.random() {
+            spawnSteamParticle(at: CGPoint(x: -180, y: 50), in: overlay)
+        }
+
+        if progress >= 1.0 {
+            completeBoiling()
+        }
+    }
+
+    private func spawnSteamParticle(at point: CGPoint, in parent: SKNode) {
+        let steam = SKLabelNode(text: "💨")
+        steam.fontSize = CGFloat.random(in: 20...35)
+        steam.position = CGPoint(x: point.x + CGFloat.random(in: -30...30), y: point.y)
+        steam.zPosition = 1020
+        steam.alpha = 0.7
+        parent.addChild(steam)
+
+        steam.run(
+            SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: CGFloat.random(in: -20...20), y: 60, duration: 1.0),
+                    SKAction.fadeOut(withDuration: 1.0),
+                    SKAction.scale(to: 1.5, duration: 1.0),
+                ]),
+                SKAction.removeFromParent(),
+            ]))
+    }
+
+    private func completeBoiling() {
+        popupState = .none
+        isDraggingGauge = false
+
+        boilingOverlay?.run(
+            SKAction.sequence([
+                SKAction.fadeOut(withDuration: 0.5),
+                SKAction.removeFromParent(),
+            ]))
+
+        boilingOverlay = nil
+        gaugeKnob = nil
+        gaugeTrack = nil
+        normalWaterSprite = nil
+        boilingWaterSprite = nil
+        boilingProgress = 0.0
+
+        let boiling = SKSpriteNode(imageNamed: "boilingwater")
+        let bScale = (size.height * 0.35) / boiling.size.height
+        boiling.setScale(bScale)
+        boiling.position = potSprite.position
+        boiling.zPosition = 10
+        boiling.alpha = 0
+        boiling.name = "potSprite"
+        cookingContainer.addChild(boiling)
+
+        potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+            self?.potSprite.removeFromParent()
+            self?.potSprite = boiling
+        }
+        boiling.run(SKAction.fadeIn(withDuration: 0.3))
+
+        if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+            stepLabel.text =
+                currentRecipeIndex == 0
+                ? "boilWater() — Tap to add pasta" : "boilWater() (inherited)"
+        }
+
+        cookingStep = 1
+        completedStepCount = 1
+        if currentRecipeIndex == 0 {
+            pastaRecipeSteps = ["boilWater()"]
+        }
+        updateCodeDisplay()
+    }
 
     private func paintAt(_ location: CGPoint) {
         guard let overlay = popupOverlay, let mask = paintMaskNode else { return }
         let localPoint = overlay.convert(location, from: self)
 
-        
         let brushSize: CGFloat = 90
 
-        
         if let last = lastPaintPoint {
             let dist = hypot(localPoint.x - last.x, localPoint.y - last.y)
             if dist < 15 { return }
         }
         lastPaintPoint = localPoint
 
-        
         let circle = SKShapeNode(circleOfRadius: brushSize)
         circle.fillColor = .white
         circle.strokeColor = .clear
         circle.position = localPoint
         mask.addChild(circle)
 
-        
         let cellSize: CGFloat = 30
         let cellX = Int(floor(localPoint.x / cellSize))
         let cellY = Int(floor(localPoint.y / cellSize))
@@ -589,12 +678,10 @@ class KitchenScene: BaseScene {
         paintedCells.insert(cellKey)
         paintStrokeCount += 1
 
-        
         if paintStrokeCount % 5 == 0 {
             spawnPaintSplatter(at: localPoint, in: overlay)
         }
 
-        
         let progress = min(CGFloat(paintStrokeCount) / CGFloat(paintThreshold), 1.0)
         if let fill = progressFill {
             let barWidth: CGFloat = 200
@@ -609,7 +696,6 @@ class KitchenScene: BaseScene {
             )
         }
 
-        
         if paintStrokeCount >= paintThreshold {
             paintingComplete()
         }
@@ -652,14 +738,12 @@ class KitchenScene: BaseScene {
         isPainting = false
         popupState = .none
 
-        
         colorCropNode?.run(
             SKAction.sequence([
                 SKAction.scale(to: 1.15, duration: 0.2),
                 SKAction.scale(to: 1.0, duration: 0.15),
             ]))
 
-        
         run(SKAction.wait(forDuration: 0.8)) { [weak self] in
             self?.closePopup(success: true)
         }
@@ -668,7 +752,6 @@ class KitchenScene: BaseScene {
     private func closePopup(success: Bool) {
         let item = currentPopupItem
 
-        
         popupOverlay?.removeAllChildren()
         popupOverlay?.removeFromParent()
         popupOverlay = nil
@@ -688,28 +771,36 @@ class KitchenScene: BaseScene {
         }
     }
 
+    private func closeBoilingPopup() {
+        boilingOverlay?.removeAllChildren()
+        boilingOverlay?.removeFromParent()
+        boilingOverlay = nil
+        gaugeKnob = nil
+        gaugeTrack = nil
+        normalWaterSprite = nil
+        boilingWaterSprite = nil
+        boilingProgress = 0.0
+        popupState = .none
+        isDraggingGauge = false
+    }
+
     private func addIngredientToSandwich(_ item: String) {
         if ingredientsAdded.contains(item) { return }
         ingredientsAdded.append(item)
 
-        
-        CheckpointManager.shared.saveKitchenIngredients(ingredientsAdded)
-
-        
         if let platformSprite = platformIngredients[item] {
             platformSprite.removeAllActions()
             platformSprite.run(
                 SKAction.sequence([
                     SKAction.group([
                         SKAction.fadeAlpha(to: 1.0, duration: 0.4),
-                        SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.4),  
-                        SKAction.scale(to: 0.35, duration: 0.2),  
+                        SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.4),
+                        SKAction.scale(to: 0.35, duration: 0.2),
                     ]),
-                    SKAction.scale(to: 0.3, duration: 0.1),  
+                    SKAction.scale(to: 0.3, duration: 0.1),
                 ]))
 
-            
-            let check = SKLabelNode(text: "✅")
+            let check = SKLabelNode(text: "")
             check.fontSize = 30
             check.position = CGPoint(x: 0, y: -30)
             check.verticalAlignmentMode = .center
@@ -721,7 +812,6 @@ class KitchenScene: BaseScene {
 
         updateCodeDisplay()
 
-        
         if ingredientsAdded.count >= 4 {
             run(SKAction.wait(forDuration: 1.0)) { [weak self] in
                 self?.completeSandwich()
@@ -736,14 +826,12 @@ class KitchenScene: BaseScene {
                 SKAction.run { [weak self] in
                     guard let self = self else { return }
 
-                    
                     self.gameLayer.childNode(withName: "platform_bread")?.removeFromParent()
                     for (_, sprite) in self.platformIngredients {
                         sprite.removeFromParent()
                     }
                     self.platformIngredients.removeAll()
 
-                    
                     let fullSandwich = SKSpriteNode(imageNamed: "sandwich")
                     fullSandwich.position = self.sandwichZone
                     fullSandwich.setScale(0)
@@ -766,220 +854,408 @@ class KitchenScene: BaseScene {
                     self.dialogBox.showDialog(
                         name: "Robot",
                         text:
-                            "Great! The ingredients are now ENCAPSULATED inside the Sandwich. You can't touch them individually anymore!"
+                            "The bread wraps around all the ingredients \u{2014} they're now hidden inside! That's ENCAPSULATION: data bundled together and protected from the outside."
                     )
                     self.dialogBox.onDialogComplete = { [weak self] in
-                        self?.startInheritancePhase()
+                        self?.gameLayer.childNode(withName: "fullSandwich")?.run(
+                            SKAction.sequence([
+                                SKAction.wait(forDuration: 0.3),
+                                SKAction.fadeOut(withDuration: 0.5),
+                                SKAction.removeFromParent(),
+                            ]))
+                        self?.dialogBox.showDialog(
+                            name: "Robot",
+                            text:
+                                "Time for the 2nd pillar \u{2014} INHERITANCE! It means creating new classes based on existing ones. A child class can reuse all the methods of its parent, without rewriting them."
+                        )
+                        self?.dialogBox.onDialogComplete = { [weak self] in
+                            self?.dialogBox.showDialog(
+                                name: "Robot",
+                                text:
+                                    "Let's see it in action! We'll cook pasta. First, a basic recipe \u{2014} then a fancier one that INHERITS all the base steps."
+                            )
+                            self?.dialogBox.onDialogComplete = { [weak self] in
+                                self?.startInheritancePhase()
+                            }
+                        }
                     }
                 },
             ]))
     }
 
-    
+
+    private var cookingContainer: SKNode!
+    private var potSprite: SKSpriteNode!
+    private var cookingStep = 0
+    private var inheritanceDone = false
 
     private func startInheritancePhase() {
         currentPhase = .inheritance
         currentRecipeIndex = 0
-        startRecipe(index: 0)
+        cookingStep = 0
+        inheritanceDone = false
+
+        for (_, sprite) in platformIngredients {
+            sprite.removeFromParent()
+        }
+        platformIngredients.removeAll()
+        gameLayer.childNode(withName: "fullSandwich")?.removeFromParent()
+        gameLayer.childNode(withName: "plateLabel")?.removeFromParent()
+        gameLayer.childNode(withName: "platform_bread")?.removeFromParent()
+        for btn in ingredientButtons { btn.removeFromParent() }
+        ingredientButtons.removeAll()
+        for s in solidIngredients { s.removeFromParent() }
+        solidIngredients.removeAll()
+
+        clearPhaseNodes()
+        startCookingRound(index: 0)
     }
 
-    private func startRecipe(index: Int) {
+    private func startCookingRound(index: Int) {
         currentRecipeIndex = index
-        completedStepCount = 0
+        cookingStep = 0
         updateCodeDisplay()
 
-        
-        recipeContainer?.removeFromParent()
-        recipeContainer = SKNode()
-        recipeContainer.position = CGPoint(x: size.width * 0.35, y: size.height * 0.5)
-        gameLayer.addChild(recipeContainer)
+        cookingContainer?.removeFromParent()
+        cookingContainer = SKNode()
+        cookingContainer.name = "cookingContainer"
+        gameLayer.addChild(cookingContainer)
+
+        let centerX = size.width * 0.30
+        let centerY = size.height * 0.50
 
         let titleLabel = SKLabelNode(fontNamed: "Menlo-Bold")
-        titleLabel.fontSize = 28
-        titleLabel.fontColor = .darkGray
-        titleLabel.position = CGPoint(x: 0, y: 220)
-        recipeContainer.addChild(titleLabel)
+        titleLabel.fontSize = 22
+        titleLabel.fontColor = .white
+        if index == 0 {
+            titleLabel.text = "Basic Pasta (Parent Class)"
+        } else {
+            titleLabel.text = "Mac & Cheese (Child Class)"
+        }
+        titleLabel.position = CGPoint(x: centerX, y: size.height * 0.85)
+        titleLabel.zPosition = 15
+        cookingContainer.addChild(titleLabel)
 
-        var steps: [String] = []
-        var methodNames: [String] = []
+        potSprite = SKSpriteNode(imageNamed: "normalwater")
+        let potScale = (size.height * 0.35) / potSprite.size.height
+        potSprite.setScale(potScale)
+        potSprite.position = CGPoint(x: centerX, y: centerY)
+        potSprite.zPosition = 10
+        potSprite.name = "potSprite"
+        cookingContainer.addChild(potSprite)
+
+        let stepLabel = SKLabelNode(fontNamed: "Menlo")
+        stepLabel.fontSize = 16
+        stepLabel.fontColor = SKColor(white: 0.9, alpha: 1)
+        stepLabel.position = CGPoint(
+            x: centerX, y: centerY - potSprite.size.height * potScale * 0.8)
+        stepLabel.zPosition = 15
+        stepLabel.name = "stepLabel"
+        cookingContainer.addChild(stepLabel)
 
         if index == 0 {
-            titleLabel.text = "Round 1: Basic Pasta (Parent)"
-            steps = ["💧", "🍝", "🚰", "🍲"]
-            methodNames = ["boilWater()", "addPasta()", "drain()", "serve()"]
-            dialogBox.showDialog(
-                name: "Robot",
-                text: "Let's make Basic Pasta! Tap each step in order: Boil, Add, Drain, Serve.")
-        } else if index == 1 {
-            titleLabel.text = "Round 2: Mac & Cheese (Child)"
-            steps = ["💧", "🍝", "🚰", "🍲", "🧀"]
-            methodNames = ["boilWater()", "addPasta()", "drain()", "serve()", "addCheese()"]
+            stepLabel.text = "Tap the pot to boil the water"
             dialogBox.showDialog(
                 name: "Robot",
                 text:
-                    "Mac & Cheese INHERITS from Basic Pasta! Watch the base steps happen automatically..."
+                    "Let's cook Basic Pasta \u{2014} the parent recipe! This class has 4 steps. Tap the pot to start each one."
             )
         } else {
-            titleLabel.text = "Round 3: Spicy Primavera (Grandchild)"
-            steps = ["💧", "🍝", "🚰", "🍲", "🧀", "🥦", "🌶️"]
-            methodNames = [
-                "boilWater()", "addPasta()", "drain()", "serve()", "addCheese()", "addVeggies()",
-                "addSpice()",
-            ]
+            stepLabel.text = "Inherited steps running..."
             dialogBox.showDialog(
                 name: "Robot",
-                text: "Spicy Pasta inherits everything from Mac & Cheese! Watch the magic!")
-        }
-
-        self.pastaRecipeSteps = methodNames
-
-        
-        for i in 0..<steps.count {
-            let btn = SKShapeNode(rectOf: CGSize(width: 80, height: 80), cornerRadius: 10)
-            btn.position = CGPoint(x: -200 + CGFloat(i) * 100, y: 100)
-            btn.fillColor = .lightGray
-            btn.strokeColor = .white
-            btn.lineWidth = 2
-            btn.name = "recipeStep_\(i)"
-            recipeContainer.addChild(btn)
-
-            let lbl = SKLabelNode(text: steps[i])
-            lbl.fontSize = 40
-            lbl.verticalAlignmentMode = .center
-            lbl.name = "icon_\(i)"
-            btn.addChild(lbl)
-
-            let method = SKLabelNode(fontNamed: "Menlo")
-            method.text = methodNames[i]
-            method.fontSize = 12
-            method.fontColor = .black
-            method.position = CGPoint(x: 0, y: -55)
-            btn.addChild(method)
-
-            
-            if (index == 1 && i < 4) || (index == 2 && i < 5) {
-                btn.alpha = 0.5
-                let done = SKLabelNode(text: "✅")
-                done.fontSize = 30
-                done.position = CGPoint(x: 25, y: 25)
-                done.zPosition = 5
-                done.alpha = 0
-                done.name = "check_\(i)"
-                btn.addChild(done)
-            }
-        }
-
-        if index > 0 {
-            autoPlayInheritedSteps(recipeIndex: index)
+                text:
+                    "Now Mac & Cheese \u{2014} it INHERITS from Basic Pasta! Watch: all 4 parent steps happen automatically. You only add what's new."
+            )
+            autoPlayCookingSteps()
         }
     }
 
-    private func autoPlayInheritedSteps(recipeIndex: Int) {
+    private func autoPlayCookingSteps() {
         autoPlaying = true
-        let inheritedCount = (recipeIndex == 1) ? 4 : 5
-
-        for i in 0..<inheritedCount {
-            run(
-                SKAction.sequence([
-                    SKAction.wait(forDuration: Double(i) * 0.8 + 1.0),
-                    SKAction.run { [weak self] in
-                        self?.markStepDone(i, isAuto: true)
-                    },
-                ]))
-        }
 
         run(
             SKAction.sequence([
-                SKAction.wait(forDuration: Double(inheritedCount) * 0.8 + 1.2),
+                SKAction.wait(forDuration: 1.5),
+                SKAction.run { [weak self] in self?.advanceCookingStep() },
+            ]))
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 3.0),
+                SKAction.run { [weak self] in self?.advanceCookingStep() },
+            ]))
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 4.5),
+                SKAction.run { [weak self] in self?.advanceCookingStep() },
+            ]))
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 6.0),
+                SKAction.run { [weak self] in self?.advanceCookingStep() },
+            ]))
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 7.5),
                 SKAction.run { [weak self] in
                     self?.autoPlaying = false
-                    self?.dialogBox.showDialog(
-                        name: "Robot",
-                        text: "Inherited steps done! Now YOU add the NEW ingredients!")
+                    self?.showCheeseStep()
                 },
             ]))
     }
 
-    private func handleRecipeTap(nodeName: String) {
-        guard !autoPlaying else { return }
-        guard let index = Int(nodeName.replacingOccurrences(of: "recipeStep_", with: "")) else {
-            return
+    private func showCheeseStep() {
+        guard let container = cookingContainer else { return }
+        let centerX = size.width * 0.30
+
+        let cheese = SKSpriteNode(imageNamed: "cheese")
+        let cheeseScale = (size.height * 0.15) / cheese.size.height
+        cheese.setScale(cheeseScale)
+        cheese.position = CGPoint(x: centerX + 180, y: size.height * 0.55)
+        cheese.zPosition = 15
+        cheese.name = "cheeseItem"
+        container.addChild(cheese)
+
+        cheese.run(
+            SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.scale(to: cheeseScale * 1.15, duration: 0.5),
+                    SKAction.scale(to: cheeseScale, duration: 0.5),
+                ])))
+
+        let arrowLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        arrowLabel.text = "NEW!"
+        arrowLabel.fontSize = 14
+        arrowLabel.fontColor = SKColor(red: 1, green: 0.8, blue: 0.2, alpha: 1)
+        arrowLabel.position = CGPoint(
+            x: centerX + 180, y: size.height * 0.55 - cheese.size.height * cheeseScale * 0.7)
+        arrowLabel.zPosition = 15
+        arrowLabel.name = "cheeseLabel"
+        container.addChild(arrowLabel)
+
+        if let stepLabel = container.childNode(withName: "stepLabel") as? SKLabelNode {
+            stepLabel.text = "Tap the cheese to add it!"
         }
 
-        
-        if index == completedStepCount {
-            markStepDone(index, isAuto: false)
-        } else if index > completedStepCount {
-            
-            if let btn = recipeContainer.childNode(withName: "recipeStep_\(index)") {
-                btn.run(
-                    SKAction.sequence([
-                        SKAction.moveBy(x: -5, y: 0, duration: 0.05),
-                        SKAction.moveBy(x: 10, y: 0, duration: 0.05),
-                        SKAction.moveBy(x: -5, y: 0, duration: 0.05),
-                    ]))
+        dialogBox.showDialog(
+            name: "Robot",
+            text:
+                "All parent steps done automatically! Now tap the cheese \u{2014} that's the NEW method this child class adds."
+        )
+    }
+
+    private func handleCookingTap() {
+        guard !autoPlaying else { return }
+
+        if currentRecipeIndex == 0 {
+            if cookingStep == 0 {
+                showBoilingPopup()
+            } else {
+                advanceCookingStep()
             }
         }
     }
 
-    private func markStepDone(_ index: Int, isAuto: Bool) {
-        guard let btn = recipeContainer.childNode(withName: "recipeStep_\(index)") as? SKShapeNode
-        else { return }
+    private func handleCheeseTap() {
+        guard currentRecipeIndex == 1, !autoPlaying else { return }
 
-        completedStepCount += 1
+        cookingContainer.childNode(withName: "cheeseItem")?.removeFromParent()
+        cookingContainer.childNode(withName: "cheeseLabel")?.removeFromParent()
 
-        
-        btn.fillColor = .green
-        btn.run(SKAction.scale(to: 1.2, duration: 0.1))
-        btn.run(SKAction.scale(to: 1.0, duration: 0.1))
+        let macCheese = SKSpriteNode(imageNamed: "macchessepasta")
+        let resultScale = (size.height * 0.35) / macCheese.size.height
+        macCheese.setScale(resultScale)
+        macCheese.position = potSprite.position
+        macCheese.zPosition = 10
+        macCheese.alpha = 0
+        cookingContainer.addChild(macCheese)
 
-        
-        if let check = btn.childNode(withName: "check_\(index)") {
-            check.run(SKAction.fadeIn(withDuration: 0.2))
+        potSprite.run(SKAction.fadeOut(withDuration: 0.3))
+        macCheese.run(SKAction.fadeIn(withDuration: 0.3))
+
+        if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+            stepLabel.text = "addCheese() \u{2014} Mac & Cheese ready!"
         }
 
-        
-        if completedStepCount >= pastaRecipeSteps.count {
-            finishRecipe()
-        }
-    }
+        cookingStep = 5
+        completedStepCount = 5
+        pastaRecipeSteps = ["boilWater()", "addPasta()", "drain()", "serve()", "addCheese()"]
+        updateCodeDisplay()
 
-    private func finishRecipe() {
         run(
             SKAction.sequence([
-                SKAction.wait(forDuration: 0.5),
+                SKAction.wait(forDuration: 1.0),
                 SKAction.run { [weak self] in
-                    self?.showConfetti()
-                    if self?.currentRecipeIndex == 0 {
-                        self?.dialogBox.showDialog(
-                            name: "Robot",
-                            text: "Basic Pasta done! Now let's try Mac & Cheese (Child Class).")
-                        self?.dialogBox.onDialogComplete = {
-                            self?.startRecipe(index: 1)
-                        }
-                    } else if self?.currentRecipeIndex == 1 {
-                        self?.dialogBox.showDialog(
-                            name: "Robot",
-                            text: "Mac & Cheese done! Now Spicy Primavera (Grandchild Class)!")
-                        self?.dialogBox.onDialogComplete = {
-                            self?.startRecipe(index: 2)
-                        }
-                    } else {
-                        self?.dialogBox.showDialog(
-                            name: "Robot",
-                            text:
-                                "You mastered INHERITANCE! You reused code instead of rewriting it! Next: POLYMORPHISM."
-                        )
-                        self?.dialogBox.onDialogComplete = {
-                            self?.recipeContainer.removeFromParent()
-                            self?.startPolymorphismPhase()
-                        }
-                    }
+                    self?.finishCookingPhase()
                 },
             ]))
     }
 
-    
+    private func advanceCookingStep() {
+        let centerX = size.width * 0.30
+
+        switch cookingStep {
+        case 0:
+            let boiling = SKSpriteNode(imageNamed: "boilingwater")
+            let bScale = (size.height * 0.35) / boiling.size.height
+            boiling.setScale(bScale)
+            boiling.position = potSprite.position
+            boiling.zPosition = 10
+            boiling.alpha = 0
+            boiling.name = "potSprite"
+            cookingContainer.addChild(boiling)
+
+            potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+                self?.potSprite.removeFromParent()
+                self?.potSprite = boiling
+            }
+            boiling.run(SKAction.fadeIn(withDuration: 0.3))
+
+            if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+                stepLabel.text =
+                    currentRecipeIndex == 0
+                    ? "boilWater() \u{2014} Tap to add pasta" : "boilWater() (inherited)"
+            }
+
+        case 1:
+            let rawPasta = SKSpriteNode(imageNamed: "rawpasta")
+            let pScale = (size.height * 0.12) / rawPasta.size.height
+            rawPasta.setScale(pScale)
+            rawPasta.position = CGPoint(x: centerX, y: size.height * 0.80)
+            rawPasta.zPosition = 15
+            cookingContainer.addChild(rawPasta)
+
+            rawPasta.run(
+                SKAction.sequence([
+                    SKAction.move(to: potSprite.position, duration: 0.5),
+                    SKAction.fadeOut(withDuration: 0.2),
+                    SKAction.removeFromParent(),
+                ]))
+
+            potSprite.run(
+                SKAction.sequence([
+                    SKAction.wait(forDuration: 0.5),
+                    SKAction.moveBy(x: -3, y: 0, duration: 0.05),
+                    SKAction.moveBy(x: 6, y: 0, duration: 0.05),
+                    SKAction.moveBy(x: -3, y: 0, duration: 0.05),
+                ]))
+
+            if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+                stepLabel.text =
+                    currentRecipeIndex == 0
+                    ? "addPasta() \u{2014} Tap to drain" : "addPasta() (inherited)"
+            }
+
+        case 2:
+            let strain = SKSpriteNode(imageNamed: "pastaStrain")
+            let sScale = (size.height * 0.35) / strain.size.height
+            strain.setScale(sScale)
+            strain.position = potSprite.position
+            strain.zPosition = 10
+            strain.alpha = 0
+            strain.name = "potSprite"
+            cookingContainer.addChild(strain)
+
+            potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+                self?.potSprite.removeFromParent()
+                self?.potSprite = strain
+            }
+            strain.run(SKAction.fadeIn(withDuration: 0.3))
+
+            if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+                stepLabel.text =
+                    currentRecipeIndex == 0
+                    ? "drain() \u{2014} Tap to serve" : "drain() (inherited)"
+            }
+
+        case 3:
+            let served = SKSpriteNode(imageNamed: "macchessepasta")
+            let svScale = (size.height * 0.35) / served.size.height
+            served.setScale(svScale)
+            served.position = potSprite.position
+            served.zPosition = 10
+            served.alpha = 0
+            served.name = "potSprite"
+            cookingContainer.addChild(served)
+
+            potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+                self?.potSprite.removeFromParent()
+                self?.potSprite = served
+            }
+            served.run(SKAction.fadeIn(withDuration: 0.3))
+
+            if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+                stepLabel.text =
+                    currentRecipeIndex == 0
+                    ? "serve() \u{2014} Basic Pasta ready!" : "serve() (inherited)"
+            }
+
+            if currentRecipeIndex == 0 {
+                run(
+                    SKAction.sequence([
+                        SKAction.wait(forDuration: 1.0),
+                        SKAction.run { [weak self] in
+                            self?.finishRound1()
+                        },
+                    ]))
+            }
+
+        default:
+            break
+        }
+
+        cookingStep += 1
+        completedStepCount = cookingStep
+
+        if currentRecipeIndex == 0 {
+            pastaRecipeSteps = Array(
+                ["boilWater()", "addPasta()", "drain()", "serve()"].prefix(cookingStep))
+        } else {
+            pastaRecipeSteps = Array(
+                ["boilWater()", "addPasta()", "drain()", "serve()", "addCheese()"].prefix(
+                    cookingStep))
+        }
+        updateCodeDisplay()
+    }
+
+    private func finishRound1() {
+        showConfetti()
+        dialogBox.showDialog(
+            name: "Robot",
+            text:
+                "Basic Pasta is done! We wrote 4 methods: boilWater, addPasta, drain, and serve. Now here's the power of INHERITANCE..."
+        )
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.dialogBox.showDialog(
+                name: "Robot",
+                text:
+                    "Mac & Cheese is a CHILD of Basic Pasta. It gets all 4 steps for free \u{2014} and only needs to add addCheese(). Watch!"
+            )
+            self?.dialogBox.onDialogComplete = { [weak self] in
+                self?.startCookingRound(index: 1)
+            }
+        }
+    }
+
+    private func finishCookingPhase() {
+        showConfetti()
+        dialogBox.showDialog(
+            name: "Robot",
+            text:
+                "That's INHERITANCE! Mac & Cheese reused all of Basic Pasta's steps without rewriting a single line. It only added what was new."
+        )
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.dialogBox.showDialog(
+                name: "Robot",
+                text:
+                    "In code, we write: class MacAndCheese: BasicPasta \u{2014} the colon means it inherits everything. Next up: POLYMORPHISM!"
+            )
+            self?.dialogBox.onDialogComplete = { [weak self] in
+                self?.cookingContainer?.removeFromParent()
+                self?.startPolymorphismPhase()
+            }
+        }
+    }
 
     private func startPolymorphismPhase() {
         currentPhase = .polymorphism
@@ -1000,7 +1276,6 @@ class KitchenScene: BaseScene {
             prepItems.append(item)
         }
 
-        
         prepareButton = SKShapeNode(rectOf: CGSize(width: 280, height: 70), cornerRadius: 16)
         prepareButton.fillColor = SKColor(red: 0.8, green: 0.4, blue: 0.1, alpha: 1)
         prepareButton.strokeColor = .white
@@ -1020,7 +1295,7 @@ class KitchenScene: BaseScene {
         dialogBox.showDialog(
             name: "Robot",
             text:
-                "POLYMORPHISM: same method, different behavior! Tap .prepare() — watch how each item prepares differently!"
+                "Same method name, different behavior — that's POLYMORPHISM! Tap .prepare() and watch each lunch item do something different."
         )
     }
 
@@ -1029,7 +1304,6 @@ class KitchenScene: BaseScene {
 
         let item = prepItems[currentPrepItem]
 
-        
         prepareButton.run(
             SKAction.sequence([
                 SKAction.run { [weak self] in
@@ -1044,7 +1318,7 @@ class KitchenScene: BaseScene {
             ]))
 
         switch currentPrepItem {
-        case 0:  
+        case 0:
             let scissors = SKLabelNode(text: "✂️")
             scissors.fontSize = 50
             scissors.position = CGPoint(x: item.position.x + 80, y: item.position.y)
@@ -1063,7 +1337,7 @@ class KitchenScene: BaseScene {
                     SKAction.scaleX(to: 1.0, duration: 0.1),
                 ]))
 
-        case 1:  
+        case 1:
             let drops = SKLabelNode(text: "💧")
             drops.fontSize = 40
             drops.position = CGPoint(x: item.position.x, y: item.position.y + 60)
@@ -1082,7 +1356,7 @@ class KitchenScene: BaseScene {
                     SKAction.scale(to: 1.0, duration: 0.15),
                 ]))
 
-        default:  
+        default:
             item.run(
                 SKAction.repeat(
                     SKAction.sequence([
@@ -1095,7 +1369,6 @@ class KitchenScene: BaseScene {
         currentPrepItem += 1
         updateCodeDisplay()
 
-        
         if currentPrepItem < prepItems.count {
             prepItems[currentPrepItem].run(SKAction.fadeAlpha(to: 1.0, duration: 0.3))
         }
@@ -1109,7 +1382,7 @@ class KitchenScene: BaseScene {
                         self?.dialogBox.showDialog(
                             name: "Robot",
                             text:
-                                "Same .prepare() method — sandwich got cut, apple got washed, juice got shaken! That's POLYMORPHISM! Last one: ABSTRACTION!"
+                                "One method, three different results! The sandwich got cut, the apple got washed, the juice got shaken. That's POLYMORPHISM! One more to go!"
                         )
                         self?.dialogBox.onDialogComplete = { [weak self] in
                             self?.clearPhaseNodes()
@@ -1120,8 +1393,6 @@ class KitchenScene: BaseScene {
         }
     }
 
-    
-
     private func startAbstractionPhase() {
         currentPhase = .abstraction
         absorbedCount = 0
@@ -1131,7 +1402,6 @@ class KitchenScene: BaseScene {
         let centerX = size.width * 0.62
         let centerY = size.height * 0.55
 
-        
         packLunchButton = SKShapeNode(rectOf: CGSize(width: 280, height: 80), cornerRadius: 20)
         packLunchButton.fillColor = SKColor(red: 0.2, green: 0.2, blue: 0.6, alpha: 0.9)
         packLunchButton.strokeColor = .white
@@ -1148,7 +1418,6 @@ class KitchenScene: BaseScene {
         bigLabel.verticalAlignmentMode = .center
         packLunchButton.addChild(bigLabel)
 
-        
         let positions: [CGPoint] = [
             CGPoint(x: centerX - 220, y: centerY + 150),
             CGPoint(x: centerX + 200, y: centerY + 130),
@@ -1181,7 +1450,7 @@ class KitchenScene: BaseScene {
         dialogBox.showDialog(
             name: "Robot",
             text:
-                "ABSTRACTION: hide complexity behind one simple call! Drag each step INTO packLunch() to combine them!"
+                "Last pillar — ABSTRACTION! We can hide all these steps behind one simple function. Drag each step into packLunch() to combine them!"
         )
     }
 
@@ -1202,12 +1471,12 @@ class KitchenScene: BaseScene {
                         self?.dialogBox.showDialog(
                             name: "Robot",
                             text:
-                                "All steps hidden inside packLunch()! One call does everything — that's ABSTRACTION! Tori's lunch is packed! 🎉"
+                                "All the steps are now hidden inside packLunch()! One simple call does everything — that's ABSTRACTION! Tori's lunch is ready!"
                         )
                         self?.dialogBox.onDialogComplete = { [weak self] in
                             self?.dialogBox.showDialog(
                                 name: "Tori",
-                                text: "My lunch is ready! Time for school! 🏫"
+                                text: "My lunch is all packed! Time for school!"
                             )
                             self?.dialogBox.onDialogComplete = {
                                 self?.navigateTo(.thankYou)
@@ -1217,8 +1486,6 @@ class KitchenScene: BaseScene {
                 ]))
         }
     }
-
-    
 
     private func clearPhaseNodes() {
         for child in gameLayer.children {
@@ -1268,16 +1535,13 @@ class KitchenScene: BaseScene {
         }
     }
 
-    
-
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
 
         if isGamePaused { return }
 
-        
-        if popupOverlay == nil {
+        if popupOverlay == nil && boilingOverlay == nil {
             let panelLocation = touch.location(in: codePanel)
             if abs(panelLocation.x) < codePanelWidth / 2
                 && abs(panelLocation.y) < codePanelHeight / 2
@@ -1293,9 +1557,9 @@ class KitchenScene: BaseScene {
             dialogBox.handleTap()
 
         case .encapsulation:
-            
+
             if let overlay = popupOverlay {
-                
+
                 let localPoint = overlay.convert(location, from: self)
                 if let closeBtn = overlay.childNode(withName: "popupClose") {
                     if closeBtn.contains(localPoint) {
@@ -1303,7 +1567,7 @@ class KitchenScene: BaseScene {
                         return
                     }
                 }
-                
+
                 if popupState == .painting {
                     isPainting = true
                     lastPaintPoint = nil
@@ -1312,7 +1576,6 @@ class KitchenScene: BaseScene {
                 return
             }
 
-            
             let tappedNodes = nodes(at: location)
             for node in tappedNodes {
                 if let name = node.name, name.starts(with: "platform_") {
@@ -1329,14 +1592,38 @@ class KitchenScene: BaseScene {
             if dialogBox.contains(location) { dialogBox.handleTap() }
 
         case .inheritance:
-            let tappedNodes = nodes(at: location)
-            for node in tappedNodes {
-                if let name = node.name, name.starts(with: "recipeStep_") {
-                    handleRecipeTap(nodeName: name)
+            if popupState == .boiling, let overlay = boilingOverlay {
+                let localPoint = overlay.convert(location, from: self)
+
+                if let closeBtn = overlay.childNode(withName: "popupClose") {
+                    if closeBtn.contains(localPoint) {
+                        closeBoilingPopup()
+                        return
+                    }
+                }
+
+                let gaugeWidth: CGFloat = 280
+                let gaugeX: CGFloat = 180
+                let gaugeY: CGFloat = 0
+                let hitAreaHeight: CGFloat = 80
+
+                if abs(localPoint.y - gaugeY) < hitAreaHeight / 2 {
+                    isDraggingGauge = true
+                    let startX = gaugeX - gaugeWidth / 2
+                    let progress = max(0, min(1, (localPoint.x - startX) / gaugeWidth))
+                    updateBoilingProgress(progress)
                     return
                 }
-                if let pName = node.parent?.name, pName.starts(with: "recipeStep_") {
-                    handleRecipeTap(nodeName: pName)
+            }
+
+            let tappedNodes = nodes(at: location)
+            for node in tappedNodes {
+                if node.name == "potSprite" || node.parent?.name == "potSprite" {
+                    handleCookingTap()
+                    return
+                }
+                if node.name == "cheeseItem" {
+                    handleCheeseTap()
                     return
                 }
             }
@@ -1384,14 +1671,23 @@ class KitchenScene: BaseScene {
             return
         }
 
-        
         if currentPhase == .encapsulation, popupOverlay != nil, popupState == .painting, isPainting
         {
             paintAt(location)
             return
         }
 
-        
+        if popupState == .boiling, isDraggingGauge, let overlay = boilingOverlay {
+            let localPoint = overlay.convert(location, from: self)
+            let gaugeWidth: CGFloat = 280
+            let gaugeX: CGFloat = 180
+            let startX = gaugeX - gaugeWidth / 2
+
+            let progress = max(0, min(1, (localPoint.x - startX) / gaugeWidth))
+            updateBoilingProgress(progress)
+            return
+        }
+
         if let btn = draggedStepButton {
             btn.position = location
         }
@@ -1399,6 +1695,7 @@ class KitchenScene: BaseScene {
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         isPainting = false
+        isDraggingGauge = false
         if isScrollingCodePanel {
             isScrollingCodePanel = false
             return
@@ -1407,9 +1704,6 @@ class KitchenScene: BaseScene {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
 
-        
-
-        
         if let btn = draggedStepButton {
             if packLunchButton.frame.contains(location) {
                 btn.run(
@@ -1431,6 +1725,7 @@ class KitchenScene: BaseScene {
 
         draggedStepButton = nil
         isScrollingCodePanel = false
+        isDraggingGauge = false
     }
 
     override func handleTouch(at location: CGPoint, touch: UITouch) {

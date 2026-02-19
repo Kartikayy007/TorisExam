@@ -20,18 +20,9 @@ class GameStateManager: ObservableObject {
     @Published var currentScene: BaseScene?
 
     func startGame() {
-        if let savedRaw = CheckpointManager.shared.savedSceneRawValue(),
-            let sceneType = SceneType(rawValue: savedRaw)
-        {
-            let scene = sceneType.createScene(size: CGSize(width: 1920, height: 1080))
-            scene.scaleMode = .aspectFill
-            currentScene = scene
-            SceneNavigator.shared.currentSceneType = sceneType
-        } else {
-            let scene = BedroomScene(size: CGSize(width: 1920, height: 1080))
-            scene.scaleMode = .aspectFill
-            currentScene = scene
-        }
+        let scene = BedroomScene(size: CGSize(width: 1920, height: 1080))
+        scene.scaleMode = .aspectFill
+        currentScene = scene
         currentScreen = .playing
         isPaused = false
     }
@@ -69,7 +60,6 @@ class GameStateManager: ObservableObject {
     }
 
     func resetProgress() {
-        CheckpointManager.shared.clearAll()
         SceneNavigator.shared.reset()
         isPaused = false
         let scene = BedroomScene(size: CGSize(width: 1920, height: 1080))

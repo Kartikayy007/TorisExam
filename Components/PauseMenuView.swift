@@ -38,7 +38,7 @@ struct PauseMenuView: View {
                     }
                     .buttonStyle(MenuButtonStyle(color: .blue))
 
-                    Button("Reset Progress") {
+                    Button("Restart") {
                         onReset()
                     }
                     .buttonStyle(MenuButtonStyle(color: .orange))

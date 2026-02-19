@@ -15,7 +15,7 @@ class ClosetScene: BaseScene {
     private var codeCropNode: SKCropNode!
     private var codeContentNode: SKNode!
     private var dialogBox: DialogBox!
-    private var roboExplain: SKSpriteNode!
+
     private var isScrollingCodePanel = false
     private var lastScrollY: CGFloat = 0
     private var codePanelWidth: CGFloat = 0
@@ -140,7 +140,7 @@ class ClosetScene: BaseScene {
         codePanel.fillColor = SKColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 0.95)
         codePanel.strokeColor = SKColor(red: 0.3, green: 0.5, blue: 0.8, alpha: 0.8)
         codePanel.lineWidth = 2
-        codePanel.position = CGPoint(x: size.width * 0.68, y: size.height * 0.55)
+        codePanel.position = CGPoint(x: size.width * 0.68, y: size.height * 0.6)
         codePanel.zPosition = 5
         gameLayer.addChild(codePanel)
 
@@ -172,14 +172,6 @@ class ClosetScene: BaseScene {
         dialogBox.position = CGPoint(x: size.width / 2, y: 80)
         dialogBox.zPosition = 100
         gameLayer.addChild(dialogBox)
-
-        roboExplain = SKSpriteNode(imageNamed: "roboexplain")
-        let roboScale = (size.height * 0.25) / roboExplain.size.height
-        roboExplain.setScale(roboScale)
-        roboExplain.position = CGPoint(x: size.width * 0.08, y: 180)
-        roboExplain.zPosition = 101
-        roboExplain.alpha = 0
-        gameLayer.addChild(roboExplain)
 
         dialogBox.onDialogComplete = { [weak self] in
             self?.advanceStep()
@@ -223,7 +215,6 @@ class ClosetScene: BaseScene {
     }
 
     private func showIntro() {
-        roboExplain.run(SKAction.fadeIn(withDuration: 0.3))
         dialogBox.showDialog(
             name: "Robot",
             text:
@@ -266,7 +257,6 @@ class ClosetScene: BaseScene {
             )
         case 6:
             introComplete = true
-            roboExplain.run(SKAction.fadeOut(withDuration: 0.3))
             glowHitboxes(pantHitboxes)
             dialogBox.showDialog(
                 name: "Robot",

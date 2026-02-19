@@ -88,9 +88,6 @@ class SceneNavigator {
         history.append(currentSceneType)
         currentSceneType = sceneType
 
-        // Save checkpoint
-        CheckpointManager.shared.saveScene(sceneType.rawValue)
-
         let newScene = sceneType.createScene(size: CGSize(width: 1920, height: 1080))
         newScene.scaleMode = .aspectFill
         view?.presentScene(newScene, transition: .fade(withDuration: 0.5))
