@@ -5,6 +5,7 @@
 //  Created by kartikay on 13/02/26.
 //
 
+import CoreMotion
 import SpriteKit
 import SwiftUI
 
@@ -21,6 +22,8 @@ class KitchenScene: BaseScene {
 
     private var currentPhase: Phase = .intro
     private var currentStep = 0
+    var previewBoilingPopup = false
+    var previewPastaCooking = false
 
     private var dialogBox: DialogBox!
     private var roboExplain: SKSpriteNode!
@@ -64,6 +67,11 @@ class KitchenScene: BaseScene {
     private var boilingWaterSprite: SKSpriteNode?
     private var boilingOverlay: SKShapeNode?
     private var isDraggingGauge = false
+
+    private var rawPastaSprite: SKSpriteNode?
+    private var isDraggingPasta = false
+    private let motionManager = CMMotionManager()
+    private var isWaitingForTilt = false
 
     private var platformIngredients: [String: SKSpriteNode] = [:]
 
@@ -110,6 +118,24 @@ class KitchenScene: BaseScene {
         updateCodeDisplay()
 
         showIntro()
+
+        if previewBoilingPopup {
+            dialogBox.isHidden = true
+            roboExplain.isHidden = true
+            currentPhase = .inheritance
+            cookingStep = 0
+            cookingContainer = SKNode()
+            cookingContainer.name = "cookingContainer"
+            gameLayer.addChild(cookingContainer)
+            potSprite = SKSpriteNode(imageNamed: "normalwater")
+            potSprite.name = "potSprite"
+            showBoilingPopup()
+        }
+
+        if previewPastaCooking {
+            roboExplain.run(SKAction.fadeOut(withDuration: 0.1))
+            startInheritancePhase()
+        }
     }
 
     private func setupCodePanel() {
@@ -443,6 +469,7 @@ class KitchenScene: BaseScene {
         popupState = .boiling
         boilingProgress = 0.0
         isDraggingGauge = false
+        cookingContainer?.isHidden = true
 
         let overlay = SKShapeNode(rectOf: size)
         overlay.fillColor = SKColor(white: 0, alpha: 0.85)
@@ -460,8 +487,8 @@ class KitchenScene: BaseScene {
         title.position = CGPoint(x: 0, y: size.height * 0.35)
         overlay.addChild(title)
 
-        let waterScale: CGFloat = 1.5
-        let waterX: CGFloat = -180
+        let waterScale: CGFloat = 0.8
+        let waterX: CGFloat = 0
 
         normalWaterSprite = SKSpriteNode(imageNamed: "normalwater")
         normalWaterSprite?.setScale(waterScale)
@@ -525,7 +552,7 @@ class KitchenScene: BaseScene {
         gaugeKnob = knob
 
         let knobLabel = SKLabelNode(fontNamed: "Menlo-Bold")
-        knobLabel.text = "🔥"
+        //        knobLabel.text = "🔥"
         knobLabel.fontSize = 20
         knobLabel.verticalAlignmentMode = .center
         knobLabel.horizontalAlignmentMode = .center
@@ -578,37 +605,45 @@ class KitchenScene: BaseScene {
             }
         }
 
-        if progress > 0.6 && Bool.random() {
-            spawnSteamParticle(at: CGPoint(x: -180, y: 50), in: overlay)
-        }
+        //        if progress > 0.6 && Bool.random() {
+        //            spawnSteamParticle(at: CGPoint(x: -180, y: 50), in: overlay)
+        //        }
 
         if progress >= 1.0 {
-            completeBoiling()
+            isDraggingGauge = false
+            run(
+                SKAction.sequence([
+                    SKAction.wait(forDuration: 0.5),
+                    SKAction.run { [weak self] in
+                        self?.completeBoiling()
+                    },
+                ]))
         }
     }
 
-    private func spawnSteamParticle(at point: CGPoint, in parent: SKNode) {
-        let steam = SKLabelNode(text: "💨")
-        steam.fontSize = CGFloat.random(in: 20...35)
-        steam.position = CGPoint(x: point.x + CGFloat.random(in: -30...30), y: point.y)
-        steam.zPosition = 1020
-        steam.alpha = 0.7
-        parent.addChild(steam)
-
-        steam.run(
-            SKAction.sequence([
-                SKAction.group([
-                    SKAction.moveBy(x: CGFloat.random(in: -20...20), y: 60, duration: 1.0),
-                    SKAction.fadeOut(withDuration: 1.0),
-                    SKAction.scale(to: 1.5, duration: 1.0),
-                ]),
-                SKAction.removeFromParent(),
-            ]))
-    }
+    //    private func spawnSteamParticle(at point: CGPoint, in parent: SKNode) {
+    //        let steam = SKLabelNode(text: "💨")
+    //        steam.fontSize = CGFloat.random(in: 20...35)
+    //        steam.position = CGPoint(x: point.x + CGFloat.random(in: -30...30), y: point.y)
+    //        steam.zPosition = 1020
+    //        steam.alpha = 0.7
+    //        parent.addChild(steam)
+    //
+    //        steam.run(
+    //            SKAction.sequence([
+    //                SKAction.group([
+    //                    SKAction.moveBy(x: CGFloat.random(in: -20...20), y: 60, duration: 1.0),
+    //                    SKAction.fadeOut(withDuration: 1.0),
+    //                    SKAction.scale(to: 1.5, duration: 1.0),
+    //                ]),
+    //                SKAction.removeFromParent(),
+    //            ]))
+    //    }
 
     private func completeBoiling() {
         popupState = .none
         isDraggingGauge = false
+        cookingContainer?.isHidden = false
 
         boilingOverlay?.run(
             SKAction.sequence([
@@ -624,7 +659,7 @@ class KitchenScene: BaseScene {
         boilingProgress = 0.0
 
         let boiling = SKSpriteNode(imageNamed: "boilingwater")
-        let bScale = (size.height * 0.35) / boiling.size.height
+        let bScale = (size.height * 0.55) / boiling.size.height
         boiling.setScale(bScale)
         boiling.position = potSprite.position
         boiling.zPosition = 10
@@ -650,6 +685,9 @@ class KitchenScene: BaseScene {
             pastaRecipeSteps = ["boilWater()"]
         }
         updateCodeDisplay()
+        dialogBox.onDialogComplete = nil
+
+        advanceCookingStep()
     }
 
     private func paintAt(_ location: CGPoint) {
@@ -782,6 +820,7 @@ class KitchenScene: BaseScene {
         boilingProgress = 0.0
         popupState = .none
         isDraggingGauge = false
+        cookingContainer?.isHidden = false
     }
 
     private func addIngredientToSandwich(_ item: String) {
@@ -883,7 +922,6 @@ class KitchenScene: BaseScene {
             ]))
     }
 
-
     private var cookingContainer: SKNode!
     private var potSprite: SKSpriteNode!
     private var cookingStep = 0
@@ -899,9 +937,17 @@ class KitchenScene: BaseScene {
             sprite.removeFromParent()
         }
         platformIngredients.removeAll()
+
+        gameLayer.enumerateChildNodes(withName: "//platform_*") { node, _ in
+            node.removeFromParent()
+        }
+
         gameLayer.childNode(withName: "fullSandwich")?.removeFromParent()
         gameLayer.childNode(withName: "plateLabel")?.removeFromParent()
-        gameLayer.childNode(withName: "platform_bread")?.removeFromParent()
+        gameLayer.childNode(withName: "sandwichZone")?.removeFromParent()
+        gameLayer.childNode(withName: "breadBottom")?.removeFromParent()
+        gameLayer.childNode(withName: "breadTop")?.removeFromParent()
+
         for btn in ingredientButtons { btn.removeFromParent() }
         ingredientButtons.removeAll()
         for s in solidIngredients { s.removeFromParent() }
@@ -915,6 +961,7 @@ class KitchenScene: BaseScene {
         currentRecipeIndex = index
         cookingStep = 0
         updateCodeDisplay()
+        dialogBox.onDialogComplete = nil
 
         cookingContainer?.removeFromParent()
         cookingContainer = SKNode()
@@ -927,17 +974,17 @@ class KitchenScene: BaseScene {
         let titleLabel = SKLabelNode(fontNamed: "Menlo-Bold")
         titleLabel.fontSize = 22
         titleLabel.fontColor = .white
-        if index == 0 {
-            titleLabel.text = "Basic Pasta (Parent Class)"
-        } else {
-            titleLabel.text = "Mac & Cheese (Child Class)"
-        }
+        //        if index == 0 {
+        //            titleLabel.text = "Basic Pasta (Parent Class)"
+        //        } else {
+        //            titleLabel.text = "Mac & Cheese (Child Class)"
+        //        }
         titleLabel.position = CGPoint(x: centerX, y: size.height * 0.85)
         titleLabel.zPosition = 15
         cookingContainer.addChild(titleLabel)
 
         potSprite = SKSpriteNode(imageNamed: "normalwater")
-        let potScale = (size.height * 0.35) / potSprite.size.height
+        let potScale = (size.height * 0.55) / potSprite.size.height
         potSprite.setScale(potScale)
         potSprite.position = CGPoint(x: centerX, y: centerY)
         potSprite.zPosition = 10
@@ -954,7 +1001,7 @@ class KitchenScene: BaseScene {
         cookingContainer.addChild(stepLabel)
 
         if index == 0 {
-            stepLabel.text = "Tap the pot to boil the water"
+            stepLabel.text = ""
             dialogBox.showDialog(
                 name: "Robot",
                 text:
@@ -1050,10 +1097,217 @@ class KitchenScene: BaseScene {
         if currentRecipeIndex == 0 {
             if cookingStep == 0 {
                 showBoilingPopup()
+            } else if cookingStep == 1 || cookingStep == 2 {
+                return
             } else {
                 advanceCookingStep()
             }
         }
+    }
+
+    private func pastaDroppedInPot() {
+        guard let pasta = rawPastaSprite else { return }
+        isDraggingPasta = false
+        print("🍝 [DEBUG] pastaDroppedInPot called, cookingStep=\(cookingStep)")
+
+        // Animate pasta into pot
+        pasta.removeAllActions()
+        pasta.run(
+            SKAction.sequence([
+                SKAction.group([
+                    SKAction.move(to: potSprite.position, duration: 0.3),
+                    SKAction.scale(to: 0.1, duration: 0.3),
+                    SKAction.fadeOut(withDuration: 0.3),
+                ]),
+                SKAction.removeFromParent(),
+            ]))
+        rawPastaSprite = nil
+
+        potSprite.run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 0.3),
+                SKAction.moveBy(x: -3, y: 0, duration: 0.05),
+                SKAction.moveBy(x: 6, y: 0, duration: 0.05),
+                SKAction.moveBy(x: -3, y: 0, duration: 0.05),
+            ]))
+
+        if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+            stepLabel.text = "Pasta is cooking..."
+        }
+
+        cookingStep = 2
+        completedStepCount = 2
+        if currentRecipeIndex == 0 {
+            pastaRecipeSteps = ["boilWater()", "addPasta()"]
+        }
+        updateCodeDisplay()
+
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 1.5),
+                SKAction.run { [weak self] in
+                    guard let self = self else { return }
+                    print(
+                        "🍝 [DEBUG] Swapping boiling water to normal water, cookingStep=\(self.cookingStep)"
+                    )
+                    let normalWater = SKSpriteNode(imageNamed: "normalwater")
+                    let nScale = (self.size.height * 0.55) / normalWater.size.height
+                    normalWater.setScale(nScale)
+                    normalWater.position = self.potSprite.position
+                    normalWater.zPosition = 10
+                    normalWater.alpha = 0
+                    normalWater.name = "potSprite"
+                    self.cookingContainer.addChild(normalWater)
+
+                    self.potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+                        self?.potSprite.removeFromParent()
+                        self?.potSprite = normalWater
+                    }
+                    normalWater.run(SKAction.fadeIn(withDuration: 0.3))
+
+                    print(
+                        "🍝 [DEBUG] Calling advanceCookingStep for drain, cookingStep=\(self.cookingStep)"
+                    )
+                    self.advanceCookingStep()
+                },
+            ]))
+    }
+
+    private func startTiltDetection() {
+        isWaitingForTilt = true
+        print(
+            "🍝 [DEBUG] startTiltDetection called, deviceMotionAvailable=\(motionManager.isDeviceMotionAvailable)"
+        )
+
+        guard motionManager.isDeviceMotionAvailable else {
+            print("🍝 [DEBUG] No device motion — using simulator fallback (2s)")
+            run(
+                SKAction.sequence([
+                    SKAction.wait(forDuration: 2.0),
+                    SKAction.run { [weak self] in
+                        self?.completeDrain()
+                    },
+                ]))
+            return
+        }
+
+        var initialRoll: Double? = nil
+
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 0.5),
+                SKAction.run { [weak self] in
+                    guard let self = self, self.isWaitingForTilt else { return }
+                    print("🍝 [DEBUG] Starting device motion updates")
+                    self.motionManager.deviceMotionUpdateInterval = 0.1
+                    self.motionManager.startDeviceMotionUpdates(to: .main) {
+                        [weak self] motion, _ in
+                        guard let self = self, self.isWaitingForTilt, let motion = motion else {
+                            return
+                        }
+                        let roll = motion.attitude.roll
+                        let pitch = motion.attitude.pitch
+                        print(
+                            "🍝 [DEBUG] Roll=\(String(format: "%.2f", roll)) Pitch=\(String(format: "%.2f", pitch))"
+                        )
+
+                        if initialRoll == nil {
+                            initialRoll = roll
+                            print("🍝 [DEBUG] Initial roll: \(String(format: "%.2f", roll))")
+                            return
+                        }
+
+                        let rollDelta = roll - (initialRoll ?? roll)
+                        print("🍝 [DEBUG] Roll delta=\(String(format: "%.2f", rollDelta))")
+                        if abs(rollDelta) > 0.5 {
+                            print("🍝 [DEBUG] Tilt detected! calling completeDrain")
+                            self.completeDrain()
+                        }
+                    }
+                },
+            ]))
+    }
+
+    private func completeDrain() {
+        guard isWaitingForTilt else {
+            print("🍝 [DEBUG] completeDrain called but isWaitingForTilt already false — skipping")
+            return
+        }
+        isWaitingForTilt = false
+        motionManager.stopDeviceMotionUpdates()
+        print("🍝 [DEBUG] completeDrain running, cookingStep=\(cookingStep)")
+
+        let strain = SKSpriteNode(imageNamed: "pastaStrain")
+        let sScale = (size.height * 0.55) / strain.size.height
+        strain.setScale(sScale)
+        strain.position = potSprite.position
+        strain.zPosition = 10
+        strain.alpha = 0
+        strain.name = "potSprite"
+        cookingContainer.addChild(strain)
+
+        potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+            self?.potSprite.removeFromParent()
+            self?.potSprite = strain
+        }
+        strain.run(SKAction.fadeIn(withDuration: 0.3))
+
+        if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
+            stepLabel.text = "drain() — Pasta strained!"
+        }
+
+        cookingStep = 3
+        completedStepCount = 3
+        if currentRecipeIndex == 0 {
+            pastaRecipeSteps = ["boilWater()", "addPasta()", "drain()"]
+        }
+        updateCodeDisplay()
+
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: 1.0),
+                SKAction.run { [weak self] in
+                    guard let self = self else { return }
+                    let boiledPasta = SKSpriteNode(imageNamed: "rawpasta")
+                    let bpScale = (self.size.height * 0.55) / boiledPasta.size.height
+                    boiledPasta.setScale(bpScale)
+                    boiledPasta.position = self.potSprite.position
+                    boiledPasta.zPosition = 10
+                    boiledPasta.alpha = 0
+                    boiledPasta.name = "potSprite"
+                    self.cookingContainer.addChild(boiledPasta)
+
+                    self.potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
+                        self?.potSprite.removeFromParent()
+                        self?.potSprite = boiledPasta
+                    }
+                    boiledPasta.run(SKAction.fadeIn(withDuration: 0.3))
+
+                    if let stepLabel = self.cookingContainer.childNode(withName: "stepLabel")
+                        as? SKLabelNode
+                    {
+                        stepLabel.text = "serve() — Boiled pasta ready!"
+                    }
+
+                    self.dialogBox.showDialog(
+                        name: "Robot",
+                        text: "serve() — The pasta is cooked and ready! Basic Pasta is done."
+                    )
+
+                    self.cookingStep = 4
+                    self.completedStepCount = 4
+                    self.pastaRecipeSteps = ["boilWater()", "addPasta()", "drain()", "serve()"]
+                    self.updateCodeDisplay()
+
+                    self.run(
+                        SKAction.sequence([
+                            SKAction.wait(forDuration: 1.0),
+                            SKAction.run { [weak self] in
+                                self?.finishRound1()
+                            },
+                        ]))
+                },
+            ]))
     }
 
     private func handleCheeseTap() {
@@ -1097,7 +1351,7 @@ class KitchenScene: BaseScene {
         switch cookingStep {
         case 0:
             let boiling = SKSpriteNode(imageNamed: "boilingwater")
-            let bScale = (size.height * 0.35) / boiling.size.height
+            let bScale = (size.height * 0.55) / boiling.size.height
             boiling.setScale(bScale)
             boiling.position = potSprite.position
             boiling.zPosition = 10
@@ -1119,58 +1373,46 @@ class KitchenScene: BaseScene {
 
         case 1:
             let rawPasta = SKSpriteNode(imageNamed: "rawpasta")
-            let pScale = (size.height * 0.12) / rawPasta.size.height
+            let pScale = (size.height * 0.55) / rawPasta.size.height
             rawPasta.setScale(pScale)
-            rawPasta.position = CGPoint(x: centerX, y: size.height * 0.80)
-            rawPasta.zPosition = 15
+            rawPasta.position = CGPoint(x: centerX + 250, y: size.height * 0.50)
+            rawPasta.zPosition = 20
+            rawPasta.name = "rawPastaSprite"
             cookingContainer.addChild(rawPasta)
+            rawPastaSprite = rawPasta
 
             rawPasta.run(
-                SKAction.sequence([
-                    SKAction.move(to: potSprite.position, duration: 0.5),
-                    SKAction.fadeOut(withDuration: 0.2),
-                    SKAction.removeFromParent(),
-                ]))
-
-            potSprite.run(
-                SKAction.sequence([
-                    SKAction.wait(forDuration: 0.5),
-                    SKAction.moveBy(x: -3, y: 0, duration: 0.05),
-                    SKAction.moveBy(x: 6, y: 0, duration: 0.05),
-                    SKAction.moveBy(x: -3, y: 0, duration: 0.05),
-                ]))
+                SKAction.repeatForever(
+                    SKAction.sequence([
+                        SKAction.scale(to: pScale * 1.08, duration: 0.5),
+                        SKAction.scale(to: pScale, duration: 0.5),
+                    ])))
 
             if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
-                stepLabel.text =
-                    currentRecipeIndex == 0
-                    ? "addPasta() \u{2014} Tap to drain" : "addPasta() (inherited)"
+                stepLabel.text = "Drag the pasta into the pot!"
             }
+            dialogBox.onDialogComplete = nil
+            dialogBox.showDialog(
+                name: "Robot",
+                text: "addPasta() — Grab the raw pasta and drop it into the boiling water!"
+            )
+            return
 
         case 2:
-            let strain = SKSpriteNode(imageNamed: "pastaStrain")
-            let sScale = (size.height * 0.35) / strain.size.height
-            strain.setScale(sScale)
-            strain.position = potSprite.position
-            strain.zPosition = 10
-            strain.alpha = 0
-            strain.name = "potSprite"
-            cookingContainer.addChild(strain)
-
-            potSprite.run(SKAction.fadeOut(withDuration: 0.3)) { [weak self] in
-                self?.potSprite.removeFromParent()
-                self?.potSprite = strain
-            }
-            strain.run(SKAction.fadeIn(withDuration: 0.3))
-
             if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
-                stepLabel.text =
-                    currentRecipeIndex == 0
-                    ? "drain() \u{2014} Tap to serve" : "drain() (inherited)"
+                stepLabel.text = "Tilt your device left to strain!"
             }
+            dialogBox.onDialogComplete = nil
+            dialogBox.showDialog(
+                name: "Robot",
+                text: "drain() — Tilt your iPad to the LEFT to strain the pasta!"
+            )
+            startTiltDetection()
+            return
 
         case 3:
             let served = SKSpriteNode(imageNamed: "macchessepasta")
-            let svScale = (size.height * 0.35) / served.size.height
+            let svScale = (size.height * 0.55) / served.size.height
             served.setScale(svScale)
             served.position = potSprite.position
             served.zPosition = 10
@@ -1185,19 +1427,7 @@ class KitchenScene: BaseScene {
             served.run(SKAction.fadeIn(withDuration: 0.3))
 
             if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
-                stepLabel.text =
-                    currentRecipeIndex == 0
-                    ? "serve() \u{2014} Basic Pasta ready!" : "serve() (inherited)"
-            }
-
-            if currentRecipeIndex == 0 {
-                run(
-                    SKAction.sequence([
-                        SKAction.wait(forDuration: 1.0),
-                        SKAction.run { [weak self] in
-                            self?.finishRound1()
-                        },
-                    ]))
+                stepLabel.text = "serve() (inherited)"
             }
 
         default:
@@ -1618,6 +1848,10 @@ class KitchenScene: BaseScene {
 
             let tappedNodes = nodes(at: location)
             for node in tappedNodes {
+                if node.name == "rawPastaSprite" {
+                    isDraggingPasta = true
+                    return
+                }
                 if node.name == "potSprite" || node.parent?.name == "potSprite" {
                     handleCookingTap()
                     return
@@ -1688,6 +1922,12 @@ class KitchenScene: BaseScene {
             return
         }
 
+        if isDraggingPasta, let pasta = rawPastaSprite {
+            pasta.removeAllActions()
+            pasta.position = location
+            return
+        }
+
         if let btn = draggedStepButton {
             btn.position = location
         }
@@ -1696,6 +1936,31 @@ class KitchenScene: BaseScene {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         isPainting = false
         isDraggingGauge = false
+
+        if isDraggingPasta, let pasta = rawPastaSprite {
+            isDraggingPasta = false
+            // Check if pasta is near the pot
+            let distance = hypot(
+                pasta.position.x - potSprite.position.x,
+                pasta.position.y - potSprite.position.y)
+            if distance < potSprite.size.width * potSprite.xScale * 0.5 {
+                pastaDroppedInPot()
+            } else {
+                // Snap back
+                let centerX = size.width * 0.30
+                let pScale = (size.height * 0.55) / pasta.size.height
+                pasta.run(
+                    SKAction.move(
+                        to: CGPoint(x: centerX + 250, y: size.height * 0.50), duration: 0.3))
+                pasta.run(
+                    SKAction.repeatForever(
+                        SKAction.sequence([
+                            SKAction.scale(to: pScale * 1.08, duration: 0.5),
+                            SKAction.scale(to: pScale, duration: 0.5),
+                        ])))
+            }
+            return
+        }
         if isScrollingCodePanel {
             isScrollingCodePanel = false
             return
@@ -1737,5 +2002,30 @@ struct KitchenScene_Previews: PreviewProvider {
         SpriteView(scene: KitchenScene(size: CGSize(width: 1920, height: 1080)))
             .ignoresSafeArea()
             .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Full Kitchen Scene")
+    }
+}
+
+// Preview that jumps straight to the boiling popup
+struct BoilingPopup_Previews: PreviewProvider {
+    static var previews: some View {
+        let scene = KitchenScene(size: CGSize(width: 1920, height: 1080))
+        scene.previewBoilingPopup = true
+        return SpriteView(scene: scene)
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Boiling Popup Only")
+    }
+}
+
+// Preview that jumps straight to pasta cooking
+struct PastaCooking_Previews: PreviewProvider {
+    static var previews: some View {
+        let scene = KitchenScene(size: CGSize(width: 1920, height: 1080))
+        scene.previewPastaCooking = true
+        return SpriteView(scene: scene)
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Pasta Cooking")
     }
 }
