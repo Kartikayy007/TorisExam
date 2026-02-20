@@ -44,6 +44,7 @@ enum SceneType: Int, CaseIterable {
         SceneType(rawValue: self.rawValue - 1)
     }
 
+    @MainActor
     func createScene(size: CGSize) -> BaseScene {
         switch self {
         case .bedroom:
