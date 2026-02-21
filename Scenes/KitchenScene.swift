@@ -75,6 +75,8 @@ class KitchenScene: BaseScene {
     var boilingWaterSprite: SKSpriteNode?
     var boilingOverlay: SKShapeNode?
     var isDraggingGauge = false
+    var stepProgressBar: SKNode?
+    var stepProgressIcons: [SKShapeNode] = []
     var rawPastaSprite: SKSpriteNode?
     var isDraggingPasta = false
     lazy var motionManager = CMMotionManager()
@@ -403,7 +405,7 @@ class KitchenScene: BaseScene {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
 
-        if isGamePaused { return }
+        if isGamePaused || autoPlaying { return }
 
         if popupOverlay == nil && boilingOverlay == nil {
             let panelLocation = touch.location(in: codePanel)
@@ -613,7 +615,7 @@ class KitchenScene: BaseScene {
             let distance = hypot(
                 pasta.position.x - (potSprite.position.x - 40),
                 pasta.position.y - potSprite.position.y)
-            if distance < potSprite.size.width * potSprite.xScale * 0.5 {
+            if distance < potSprite.size.width * potSprite.xScale * 0.7 {  // Increased hitbox drop radius slightly
                 pastaDroppedInPot()
             } else {
                 let centerX = size.width * 0.40
@@ -621,7 +623,7 @@ class KitchenScene: BaseScene {
                 let pScale = (size.height * 0.2) / unscaledHeight
                 pasta.run(
                     SKAction.move(
-                        to: CGPoint(x: centerX + 200, y: size.height * 0.50), duration: 0.3))
+                        to: CGPoint(x: centerX + 120, y: size.height * 0.50), duration: 0.3))
                 pasta.run(
                     SKAction.repeatForever(
                         SKAction.sequence([
@@ -641,6 +643,7 @@ class KitchenScene: BaseScene {
 
         if let btn = draggedStepButton {
             if packLunchButton.frame.contains(location) {
+                btn.name = "absorbed"
                 btn.run(
                     SKAction.sequence([
                         SKAction.group([
@@ -651,6 +654,13 @@ class KitchenScene: BaseScene {
                         SKAction.removeFromParent(),
                     ]))
                 absorbStep()
+            } else {
+                if let dict = btn.userData,
+                    let origX = dict["origX"] as? CGFloat,
+                    let origY = dict["origY"] as? CGFloat
+                {
+                    btn.run(SKAction.move(to: CGPoint(x: origX, y: origY), duration: 0.3))
+                }
             }
             draggedStepButton = nil
         }

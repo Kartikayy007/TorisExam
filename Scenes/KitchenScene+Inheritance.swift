@@ -1,10 +1,9 @@
-// 
+//
 //  KitchenScene+Inheritance.swift
 //  TorisExam
 //
 //  Created by Kartikay on 19/02/26.
 //
-
 
 import CoreMotion
 import SpriteKit
@@ -52,7 +51,7 @@ extension KitchenScene {
         cookingContainer.name = "cookingContainer"
         gameLayer.addChild(cookingContainer)
 
-        let centerX = size.width * 0.40
+        let centerX = size.width * 0.4
         let centerY = size.height * 0.50
 
         let titleLabel = SKLabelNode(fontNamed: "Menlo-Bold")
@@ -84,6 +83,8 @@ extension KitchenScene {
         cookingContainer.addChild(stepLabel)
 
         if index == 0 {
+            setupProgressBar(stepNames: ["boil()", "addPasta()", "drain()", "serve()"])
+            updateProgressBar(completedSteps: 0)
             stepLabel.text = ""
             dialogBox.showDialog(
                 name: "Robot",
@@ -91,6 +92,10 @@ extension KitchenScene {
                     "Let's cook Basic Pasta \u{2014} the parent recipe! This class has 4 steps. Tap the pot to start each one."
             )
         } else {
+            setupProgressBar(stepNames: [
+                "boil()", "addPasta()", "drain()", "serve()", "addCheese()",
+            ])
+            updateProgressBar(completedSteps: 0)
             stepLabel.text = "Mac & Cheese needs boiled pasta first!"
             dialogBox.onDialogComplete = { [weak self] in
                 self?.dialogBox.hideDialog()
@@ -127,7 +132,7 @@ extension KitchenScene {
         overlay.addChild(title)
 
         let waterScale: CGFloat = 0.8
-        let waterX: CGFloat = 50
+        let waterX: CGFloat = 170
 
         normalWaterSprite = SKSpriteNode(imageNamed: "normalwater")
         normalWaterSprite?.setScale(waterScale)
@@ -144,7 +149,7 @@ extension KitchenScene {
 
         let gaugeWidth: CGFloat = 280
         let gaugeHeight: CGFloat = 24
-        let gaugeX: CGFloat = 180
+        let gaugeX: CGFloat = 190
         let gaugeY: CGFloat = 0
 
         let trackContainer = SKNode()
@@ -217,6 +222,9 @@ extension KitchenScene {
     }
 
     func updateBoilingProgress(_ progress: CGFloat) {
+        // Prevent multiple completions
+        if boilingProgress >= 1.0 { return }
+
         guard let knob = gaugeKnob,
             let boiling = boilingWaterSprite,
             let overlay = boilingOverlay
@@ -256,6 +264,7 @@ extension KitchenScene {
     }
 
     func completeBoiling() {
+        guard popupState == .boiling else { return }  // Double guard
         popupState = .none
         isDraggingGauge = false
         cookingContainer?.isHidden = false
@@ -302,6 +311,8 @@ extension KitchenScene {
         updateCodeDisplay()
         dialogBox.onDialogComplete = nil
 
+        updateProgressBar(completedSteps: 1)
+
         advanceCookingStep()
     }
 
@@ -346,7 +357,13 @@ extension KitchenScene {
         guard let btn = cookingContainer.childNode(withName: "inheritButton") else { return }
         btn.removeFromParent()
 
+        // Fix unkillable Inherit button bug: Clear the previous dialog complete handler!
+        dialogBox.onDialogComplete = nil
+        autoPlaying = true  // Block input during cinematic
+
         showConfetti()
+
+        updateProgressBar(completedSteps: 4)
 
         let centerX = size.width * 0.40
         let pastaX = centerX - 120
@@ -385,6 +402,7 @@ extension KitchenScene {
                 SKAction.run { [weak self] in
                     self?.dialogBox.hideDialog()
                     self?.showCheeseStep()
+                    self?.autoPlaying = false  // Restore input
                 },
             ]))
     }
@@ -485,6 +503,7 @@ extension KitchenScene {
             pastaRecipeSteps = ["boilWater()", "addPasta()"]
         }
         updateCodeDisplay()
+        updateProgressBar(completedSteps: cookingStep)
 
         run(
             SKAction.sequence([
@@ -623,6 +642,7 @@ extension KitchenScene {
             pastaRecipeSteps = ["boilWater()", "addPasta()", "drain()"]
         }
         updateCodeDisplay()
+        updateProgressBar(completedSteps: cookingStep)
 
         run(
             SKAction.sequence([
@@ -654,6 +674,7 @@ extension KitchenScene {
                     self.completedStepCount = 4
                     self.pastaRecipeSteps = ["boilWater()", "addPasta()", "drain()", "serve()"]
                     self.updateCodeDisplay()
+                    self.updateProgressBar(completedSteps: self.cookingStep)
 
                     self.run(
                         SKAction.sequence([
@@ -688,6 +709,7 @@ extension KitchenScene {
         }
         cookingContainer.childNode(withName: "cheeseLabel")?.removeFromParent()
 
+        autoPlaying = true
         run(
             SKAction.sequence([
                 SKAction.wait(forDuration: 0.5),
@@ -703,6 +725,8 @@ extension KitchenScene {
 
                     self.potSprite.run(SKAction.fadeOut(withDuration: 0.5))
                     macCheese.run(SKAction.fadeIn(withDuration: 0.5))
+
+                    self.updateProgressBar(completedSteps: 5)
 
                     if let stepLabel = self.cookingContainer.childNode(withName: "stepLabel")
                         as? SKLabelNode
@@ -721,6 +745,7 @@ extension KitchenScene {
                         SKAction.sequence([
                             SKAction.wait(forDuration: 1.5),
                             SKAction.run { [weak self] in
+                                self?.autoPlaying = false
                                 self?.finishCookingPhase()
                             },
                         ]))
@@ -755,10 +780,11 @@ extension KitchenScene {
             }
 
         case 1:
+            // Move raw pasta a bit to the left (was +200, now +120)
             let rawPasta = SKSpriteNode(imageNamed: "rawpasta")
             let pScale = (size.height * 0.2) / rawPasta.size.height
             rawPasta.setScale(pScale)
-            rawPasta.position = CGPoint(x: centerX + 200, y: size.height * 0.50)
+            rawPasta.position = CGPoint(x: centerX + 120, y: size.height * 0.50)
             rawPasta.zPosition = 20
             rawPasta.name = "rawPastaSprite"
             cookingContainer.addChild(rawPasta)
@@ -770,6 +796,25 @@ extension KitchenScene {
                         SKAction.scale(to: pScale * 1.08, duration: 0.5),
                         SKAction.scale(to: pScale, duration: 0.5),
                     ])))
+
+            if showDebugOverlay {
+                let dropZone = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
+                dropZone.strokeColor = .red
+                dropZone.lineWidth = 4
+                dropZone.position = CGPoint(x: potSprite.position.x - 40, y: potSprite.position.y)
+                dropZone.zPosition = 900
+                dropZone.name = "debug_drop_zone"
+                cookingContainer.addChild(dropZone)
+
+                let dropLbl = SKLabelNode(fontNamed: "Menlo-Bold")
+                dropLbl.text = "DROP PASTA IN THIS RED BOX"
+                dropLbl.fontSize = 12
+                dropLbl.fontColor = .red
+                dropLbl.position = CGPoint(x: 0, y: 135)
+                dropZone.addChild(dropLbl)
+
+                print("🍝 [DEBUG] Created visual drop zone at \(dropZone.position)")
+            }
 
             if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
                 stepLabel.text = "Drag the pasta into the pot!"
@@ -843,6 +888,7 @@ extension KitchenScene {
                     cookingStep))
         }
         updateCodeDisplay()
+        updateProgressBar(completedSteps: cookingStep)
     }
 
     func finishRound1() {
@@ -920,5 +966,127 @@ extension KitchenScene {
         lbl.text = "[\(name)]  x:\(xPct) y:\(yPct) sc:\(sc)"
         lbl.zPosition = 901
         bg.addChild(lbl)
+    }
+
+    func setupProgressBar(stepNames: [String]) {
+        stepProgressBar?.removeFromParent()
+        stepProgressIcons.removeAll()
+
+        let barNode = SKNode()
+        let totalSteps = stepNames.count
+
+        // Dynamically adjust spacing to prevent the bar from going off-screen
+        let maxAvailableWidth = size.width * 0.48
+        let calculatedSpacing = maxAvailableWidth / CGFloat(max(1, totalSteps - 1))
+        let spacing: CGFloat = min(130.0, calculatedSpacing)
+
+        let totalWidth = CGFloat(totalSteps - 1) * spacing
+        let startX = -totalWidth / 2
+
+        let track = SKShapeNode(rectOf: CGSize(width: totalWidth, height: 10), cornerRadius: 5)
+        track.fillColor = SKColor(white: 0.85, alpha: 1.0)
+        track.strokeColor = .clear
+        track.zPosition = 48
+        track.position = CGPoint(x: 0, y: 0)
+        barNode.addChild(track)
+
+        let trackFill = SKSpriteNode(
+            color: SKColor.systemGreen, size: CGSize(width: totalWidth, height: 10))
+        trackFill.anchorPoint = CGPoint(x: 0, y: 0.5)
+        trackFill.position = CGPoint(x: startX, y: 0)
+        trackFill.zPosition = 49
+        trackFill.xScale = 0.001
+        trackFill.name = "trackFill"
+        barNode.addChild(trackFill)
+
+        for i in 0..<totalSteps {
+            let circle = SKShapeNode(circleOfRadius: 24)
+            circle.fillColor = SKColor(white: 0.85, alpha: 1.0)
+            circle.strokeColor = .clear
+            circle.position = CGPoint(x: startX + CGFloat(i) * spacing, y: 0)
+            circle.zPosition = 50
+            barNode.addChild(circle)
+            stepProgressIcons.append(circle)
+
+            let numLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+            numLabel.text = "\(i + 1)"
+            numLabel.fontSize = 22
+            numLabel.fontColor = .darkGray
+            numLabel.verticalAlignmentMode = .center
+            numLabel.name = "numLabel"
+            numLabel.zPosition = 51
+            circle.addChild(numLabel)
+
+            let stepLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+            stepLabel.text = stepNames[i]
+            stepLabel.fontSize = 18
+            stepLabel.fontColor = SKColor.darkGray
+            stepLabel.horizontalAlignmentMode = .center
+            stepLabel.position = CGPoint(x: 0, y: -45)
+            stepLabel.zPosition = 51
+            stepLabel.name = "nameLabel"
+            circle.addChild(stepLabel)
+        }
+
+        barNode.position = CGPoint(x: size.width * 0.32, y: size.height * 0.88)
+        barNode.zPosition = 50
+        cookingContainer?.addChild(barNode)
+        stepProgressBar = barNode
+    }
+
+    func updateProgressBar(completedSteps: Int) {
+        let activeColor = SKColor.white
+        let completedColor = SKColor.systemGreen
+        let inactiveColor = SKColor(white: 0.85, alpha: 1.0)
+        let inactiveTextColor = SKColor(white: 0.25, alpha: 1.0)
+
+        if let trackFill = stepProgressBar?.childNode(withName: "trackFill") {
+            let totalIcons = max(1, stepProgressIcons.count - 1)
+            let cappedCompleted = min(completedSteps, totalIcons)
+            let safeFraction = CGFloat(cappedCompleted) / CGFloat(totalIcons)
+            trackFill.run(SKAction.scaleX(to: max(safeFraction, 0.001), duration: 0.4))
+        }
+
+        for i in 0..<stepProgressIcons.count {
+            let circle = stepProgressIcons[i]
+            let oldColor = circle.fillColor
+
+            if i < completedSteps {
+                circle.fillColor = completedColor
+                if let numLbl = circle.childNode(withName: "numLabel") as? SKLabelNode {
+                    numLbl.fontColor = .white
+                }
+                if let nameLbl = circle.childNode(withName: "nameLabel") as? SKLabelNode {
+                    nameLbl.fontColor = completedColor
+                    nameLbl.alpha = 1.0
+                }
+            } else if i == completedSteps {
+                circle.fillColor = activeColor
+                if let numLbl = circle.childNode(withName: "numLabel") as? SKLabelNode {
+                    numLbl.fontColor = .black
+                }
+                if let nameLbl = circle.childNode(withName: "nameLabel") as? SKLabelNode {
+                    nameLbl.fontColor = .white
+                    nameLbl.alpha = 1.0
+                }
+            } else {
+                circle.fillColor = inactiveColor
+                if let numLbl = circle.childNode(withName: "numLabel") as? SKLabelNode {
+                    numLbl.fontColor = inactiveTextColor
+                }
+                if let nameLbl = circle.childNode(withName: "nameLabel") as? SKLabelNode {
+                    nameLbl.fontColor = inactiveTextColor
+                    nameLbl.alpha = 1.0
+                }
+            }
+
+            if oldColor != circle.fillColor {
+                circle.run(
+                    SKAction.sequence([
+                        SKAction.scale(to: 1.35, duration: 0.15),
+                        SKAction.scale(to: 1.0, duration: 0.15),
+                    ]))
+            }
+        }
     }
 }

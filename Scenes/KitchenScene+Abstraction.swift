@@ -1,10 +1,9 @@
-// 
+//
 //  KitchenScene+Abstraction.swift
 //  TorisExam
 //
 //  Created by Kartikay on 19/02/26.
 //
-
 
 import SpriteKit
 
@@ -52,6 +51,11 @@ extension KitchenScene {
             btn.position = positions[i]
             btn.zPosition = 15
             btn.name = "stepBtn_\(i)"
+
+            let dict = NSMutableDictionary()
+            dict["originalPos"] = NSValue(cgPoint: positions[i])
+            btn.userData = dict
+
             gameLayer.addChild(btn)
 
             let label = SKLabelNode(fontNamed: "Menlo")
@@ -76,6 +80,7 @@ extension KitchenScene {
         updateCodeDisplay()
 
         if absorbedCount >= stepMethods.count {
+            autoPlaying = true
             packLunchButton.fillColor = SKColor(red: 0.2, green: 0.7, blue: 0.3, alpha: 1)
 
             run(
@@ -96,6 +101,7 @@ extension KitchenScene {
                                 text: "My lunch is all packed! Time for school!"
                             )
                             self?.dialogBox.onDialogComplete = {
+                                self?.autoPlaying = false
                                 self?.navigateTo(.thankYou)
                             }
                         }

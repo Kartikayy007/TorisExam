@@ -1,4 +1,4 @@
-// 
+//
 //  KitchenScene+Encapsulation.swift
 //  TorisExam
 //
@@ -67,11 +67,11 @@ extension KitchenScene {
         popupState = .painting
         paintedCells.removeAll()
         if item == "bread" {
-            paintThreshold = 220
+            paintThreshold = 60
         } else if item == "spinach" {
-            paintThreshold = 180
+            paintThreshold = 55
         } else {
-            paintThreshold = 100
+            paintThreshold = 45
         }
         isPainting = false
 
@@ -177,7 +177,7 @@ extension KitchenScene {
         circle.position = localPoint
         mask.addChild(circle)
 
-        let cellSize: CGFloat = 30
+        let cellSize: CGFloat = 15
         let cellX = Int(floor(localPoint.x / cellSize))
         let cellY = Int(floor(localPoint.y / cellSize))
         let cellKey = "\(cellX),\(cellY)"
@@ -296,9 +296,9 @@ extension KitchenScene {
         if ingredientsAdded.contains(item) { return }
         ingredientsAdded.append(item)
 
-        if let platformSprite = platformIngredients[item] {
-            platformSprite.removeAllActions()
-            platformSprite.run(
+        gameLayer.enumerateChildNodes(withName: "platform_\(item)") { node, _ in
+            node.removeAllActions()
+            node.run(
                 SKAction.sequence([
                     SKAction.group([
                         SKAction.fadeAlpha(to: 1.0, duration: 0.4),
@@ -308,13 +308,13 @@ extension KitchenScene {
                     SKAction.scale(to: 0.3, duration: 0.1),
                 ]))
 
-            let check = SKLabelNode(text: "")
-            check.fontSize = 30
-            check.position = CGPoint(x: 0, y: -30)
+            let check = SKLabelNode(text: "✅")
+            check.fontSize = 25
+            check.position = CGPoint(x: 10, y: -20)
             check.verticalAlignmentMode = .center
             check.zPosition = 5
             check.setScale(0)
-            platformSprite.addChild(check)
+            node.addChild(check)
             check.run(SKAction.scale(to: 1.0, duration: 0.2))
         }
 
@@ -334,8 +334,11 @@ extension KitchenScene {
                 SKAction.run { [weak self] in
                     guard let self = self else { return }
 
-                    ["bread", "cheese", "tomato", "spinach"].forEach {
-                        self.gameLayer.childNode(withName: "platform_\($0)")?.removeFromParent()
+                    ["bread", "cheese", "tomato", "spinach"].forEach { ingredient in
+                        self.gameLayer.enumerateChildNodes(withName: "platform_\(ingredient)") {
+                            node, _ in
+                            node.removeFromParent()
+                        }
                     }
                     self.platformIngredients.removeAll()
 
