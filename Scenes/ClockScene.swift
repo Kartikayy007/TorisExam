@@ -51,7 +51,9 @@ class ClockScene: BaseScene {
     }
 
     private func startAlarm() {
-
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.returnToBedroom()
+        }
         dialogBox.showDialog(name: "Tori", text: "RING RING RING! 🔔")
 
         let rotateLeft = SKAction.rotate(byAngle: 0.15, duration: 0.05)

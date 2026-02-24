@@ -67,11 +67,11 @@ extension KitchenScene {
         popupState = .painting
         paintedCells.removeAll()
         if item == "bread" {
-            paintThreshold = 60
+            paintThreshold = 160
         } else if item == "spinach" {
-            paintThreshold = 55
+            paintThreshold = 220
         } else {
-            paintThreshold = 45
+            paintThreshold = 140
         }
         isPainting = false
 
@@ -85,10 +85,10 @@ extension KitchenScene {
         popupOverlay = overlay
 
         let title = SKLabelNode(fontNamed: "Menlo-Bold")
-        title.text = "Color \(item.capitalized) to Reveal!"
+        title.text = "Color \(item.capitalized) to prepare ingredient"
         title.fontSize = 28
         title.fontColor = .white
-        title.position = CGPoint(x: 0, y: size.height * 0.35)
+        title.position = CGPoint(x: 0, y: -size.height * 0.35)
         overlay.addChild(title)
 
         let spriteScale: CGFloat = 1.8
@@ -117,25 +117,8 @@ extension KitchenScene {
         cropNode.maskNode = mask
         paintMaskNode = mask
 
-        let barWidth: CGFloat = 200
-        let barHeight: CGFloat = 12
-        let barBg = SKShapeNode(rectOf: CGSize(width: barWidth, height: barHeight), cornerRadius: 6)
-        barBg.fillColor = SKColor(white: 0.3, alpha: 0.8)
-        barBg.strokeColor = SKColor(white: 0.5, alpha: 0.5)
-        barBg.lineWidth = 1
-        barBg.position = CGPoint(x: 0, y: -size.height * 0.35)
-        barBg.zPosition = 1005
-        overlay.addChild(barBg)
-        progressBar = barBg
-
-        let fill = SKShapeNode(rectOf: CGSize(width: 1, height: barHeight - 4), cornerRadius: 4)
-        fill.fillColor = SKColor(red: 0.3, green: 0.9, blue: 0.4, alpha: 1)
-        fill.strokeColor = .clear
-        fill.position = CGPoint(x: -barWidth / 2, y: 0)
-        fill.xScale = 0.01
-        fill.zPosition = 1006
-        barBg.addChild(fill)
-        progressFill = fill
+        progressFill = nil
+        progressBar = nil
 
         let hint = SKLabelNode(fontNamed: "Menlo-Italic")
         hint.text = "Paint with your finger to reveal the color!"
@@ -143,27 +126,21 @@ extension KitchenScene {
         hint.fontColor = .gray
         hint.position = CGPoint(x: 0, y: -size.height * 0.4)
         overlay.addChild(hint)
-
-        addCloseButton(to: overlay)
-    }
-
-    func addCloseButton(to overlay: SKNode) {
-        let closeBtn = SKShapeNode(circleOfRadius: 30)
-        closeBtn.fillColor = .red
-        closeBtn.position = CGPoint(x: size.width * 0.4, y: size.height * 0.4)
-        closeBtn.name = "popupClose"
-        closeBtn.zPosition = 1005
-        overlay.addChild(closeBtn)
-        let xLbl = SKLabelNode(text: "X")
-        xLbl.verticalAlignmentMode = .center
-        closeBtn.addChild(xLbl)
     }
 
     func paintAt(_ location: CGPoint) {
         guard let overlay = popupOverlay, let mask = paintMaskNode else { return }
         let localPoint = overlay.convert(location, from: self)
 
-        let brushSize: CGFloat = 90
+        // Prevent coloring outside the ingredient's bounding box
+        if let coloredSprite = colorCropNode?.children.first as? SKSpriteNode {
+            let spriteFrame = coloredSprite.calculateAccumulatedFrame()
+            if !spriteFrame.contains(localPoint) {
+                return
+            }
+        }
+
+        let brushSize: CGFloat = 70
 
         if let last = lastPaintPoint {
             let dist = hypot(localPoint.x - last.x, localPoint.y - last.y)
@@ -190,18 +167,6 @@ extension KitchenScene {
         }
 
         let progress = min(CGFloat(paintStrokeCount) / CGFloat(paintThreshold), 1.0)
-        if let fill = progressFill {
-            let barWidth: CGFloat = 200
-            fill.xScale = max(progress * barWidth, 1)
-            fill.position.x = -barWidth / 2 + (progress * barWidth) / 2
-
-            fill.fillColor = SKColor(
-                red: 0.2 * (1 - progress),
-                green: 0.7 + 0.3 * progress,
-                blue: 0.3 * (1 - progress),
-                alpha: 1
-            )
-        }
 
         if paintStrokeCount >= paintThreshold {
             paintingComplete()
@@ -244,6 +209,11 @@ extension KitchenScene {
     func paintingComplete() {
         isPainting = false
         popupState = .none
+
+        // Instantly reveal the entire colored sprite to fix the "patchy colored" look
+        let fullReveal = SKSpriteNode(color: .white, size: CGSize(width: 2000, height: 2000))
+        fullReveal.position = .zero
+        paintMaskNode?.addChild(fullReveal)
 
         colorCropNode?.run(
             SKAction.sequence([

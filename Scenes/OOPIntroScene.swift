@@ -96,6 +96,9 @@ class OOPIntroScene: BaseScene {
             removeOverlayAndShowCloset()
             return
         }
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.advanceDialog()
+        }
         dialogBox.showDialog(name: "Robot", text: dialogs[dialogIndex])
     }
 

@@ -58,6 +58,9 @@ class RobotIdeaScene: BaseScene {
             dialogBox.hideDialog()
             return
         }
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.advanceDialog()
+        }
         dialogBox.showDialog(name: "Robot", text: dialogues[currentIndex])
     }
 

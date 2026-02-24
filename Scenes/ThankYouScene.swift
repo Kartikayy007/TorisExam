@@ -42,6 +42,9 @@ class ThankYouScene: BaseScene {
     }
 
     private func showDialog() {
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.transitionToNextScene()
+        }
         dialogBox.showDialog(
             name: "Tori",
             text: "Thank you Robo! Please help me learn OOPs while I get my clothes ready!")

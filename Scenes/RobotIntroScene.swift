@@ -60,13 +60,10 @@ class RobotIntroScene: BaseScene {
             dialogBox.hideDialog()
             return
         }
-        dialogBox.showDialog(name: "Tori", text: dialogues[currentIndex])
-
-        let wait = SKAction.wait(forDuration: 1.5)
-        let advance = SKAction.run { [weak self] in
+        dialogBox.onDialogComplete = { [weak self] in
             self?.advanceDialog()
         }
-        run(SKAction.sequence([wait, advance]))
+        dialogBox.showDialog(name: "Tori", text: dialogues[currentIndex])
     }
 
     private func advanceDialog() {

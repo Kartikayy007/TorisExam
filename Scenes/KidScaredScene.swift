@@ -112,6 +112,9 @@ class KidScaredScene: BaseScene {
     }
 
     private func showDialog() {
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.transitionToRobotIdea()
+        }
         dialogBox.showDialog(name: "Tori", text: "What am I going to do!!")
     }
 

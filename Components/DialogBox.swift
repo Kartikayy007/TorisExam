@@ -104,7 +104,9 @@ class DialogBox: SKNode {
             isTyping = false
             showContinueIndicator()
         } else {
-            onDialogComplete?()
+            let action = onDialogComplete
+            onDialogComplete = nil
+            action?()
         }
     }
 

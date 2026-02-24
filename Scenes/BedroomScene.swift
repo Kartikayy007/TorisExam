@@ -88,6 +88,7 @@ class BedroomScene: BaseScene {
         ]
         currentDialogIndex = 0
         showCurrentDialogue()
+        spawnZzz()
     }
 
     private func startPostAlarmSequence() {
@@ -109,6 +110,9 @@ class BedroomScene: BaseScene {
             return
         }
         let dialogue = dialogues[currentDialogIndex]
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.advanceStory()
+        }
         dialogBox.showDialog(name: dialogue.name, text: dialogue.text)
     }
 
@@ -116,13 +120,13 @@ class BedroomScene: BaseScene {
         currentDialogIndex += 1
 
         if !isPostAlarm {
-            if currentDialogIndex == 2 {
+            // Fix: advance to clock after the single "snoring peacefully" dialogue is tapped
+            if currentDialogIndex >= dialogues.count {
                 transitionToClock()
             } else {
                 showCurrentDialogue()
             }
         } else {
-
             if currentDialogIndex == 1 {
                 boy.texture = SKTexture(imageNamed: "Sitting")
                 boy.position = CGPoint(x: size.width * 0.35, y: size.height * 0.5)
@@ -137,6 +141,43 @@ class BedroomScene: BaseScene {
                 showCurrentDialogue()
             }
         }
+    }
+
+    private func spawnZzz() {
+        guard !isPostAlarm else { return }
+
+        let zLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        zLabel.text = "Z"
+        zLabel.fontSize = CGFloat.random(in: 20...40)
+        zLabel.fontColor = .white
+        zLabel.alpha = 0
+
+        // Start near boy's head
+        let headX = size.width * 0.38
+        let headY = size.height * 0.54
+        zLabel.position = CGPoint(
+            x: headX + CGFloat.random(in: -20...20),
+            y: headY + CGFloat.random(in: 0...20)
+        )
+        zLabel.zPosition = 10
+        gameLayer.addChild(zLabel)
+
+        // Float up and fade
+        let floatUp = SKAction.moveBy(x: CGFloat.random(in: 20...50), y: 150, duration: 2.0)
+        let fadeSequence = SKAction.sequence([
+            SKAction.fadeIn(withDuration: 0.5),
+            SKAction.wait(forDuration: 1.0),
+            SKAction.fadeOut(withDuration: 0.5),
+        ])
+
+        let group = SKAction.group([floatUp, fadeSequence])
+        zLabel.run(SKAction.sequence([group, SKAction.removeFromParent()]))
+
+        run(
+            SKAction.sequence([
+                SKAction.wait(forDuration: Double.random(in: 0.8...1.5)),
+                SKAction.run { [weak self] in self?.spawnZzz() },
+            ]))
     }
 
     private func transitionToClock() {

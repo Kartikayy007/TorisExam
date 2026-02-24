@@ -7,6 +7,7 @@
 
 import CoreMotion
 import SpriteKit
+import SwiftUI
 
 extension KitchenScene {
 
@@ -217,12 +218,9 @@ extension KitchenScene {
         hint.fontColor = .gray
         hint.position = CGPoint(x: gaugeX, y: gaugeY - 100)
         overlay.addChild(hint)
-
-        addCloseButton(to: overlay)
     }
 
     func updateBoilingProgress(_ progress: CGFloat) {
-        // Prevent multiple completions
         if boilingProgress >= 1.0 { return }
 
         guard let knob = gaugeKnob,
@@ -317,12 +315,12 @@ extension KitchenScene {
     }
 
     func showInheritButton() {
-        let centerX = size.width * 0.40
+        let centerX = size.width * 0.35
         let inheritBtn = SKShapeNode(rectOf: CGSize(width: 350, height: 74), cornerRadius: 20)
         inheritBtn.fillColor = SKColor(red: 0.2, green: 0.6, blue: 0.9, alpha: 1)
         inheritBtn.strokeColor = .white
         inheritBtn.lineWidth = 4
-        inheritBtn.position = CGPoint(x: centerX, y: size.height * 0.25)
+        inheritBtn.position = CGPoint(x: centerX - 60, y: size.height * 0.45)
         inheritBtn.zPosition = 25
         inheritBtn.name = "inheritButton"
         inheritBtn.alpha = 0
@@ -365,13 +363,13 @@ extension KitchenScene {
 
         updateProgressBar(completedSteps: 4)
 
-        let centerX = size.width * 0.40
+        let centerX = size.width * 0.35
         let pastaX = centerX - 120
 
         let boiledPasta = SKSpriteNode(imageNamed: "boiledpasta")
-        let bpScale = (size.height * 0.45) / boiledPasta.size.height
+        let bpScale = (size.height * 0.40) / boiledPasta.size.height
         boiledPasta.setScale(bpScale)
-        boiledPasta.position = CGPoint(x: pastaX, y: size.height * 0.50)
+        boiledPasta.position = CGPoint(x: centerX - 100, y: size.height * 0.50)
         boiledPasta.zPosition = 10
         boiledPasta.alpha = 0
         boiledPasta.name = "potSprite"
@@ -415,7 +413,7 @@ extension KitchenScene {
         let cheese = SKSpriteNode(imageNamed: "cheese")
         let cheeseScale = (size.height * 0.15) / cheese.size.height
         cheese.setScale(cheeseScale)
-        cheese.position = CGPoint(x: pastaX + 260, y: size.height * 0.50)
+        cheese.position = CGPoint(x: centerX + 20, y: size.height * 0.50)
         cheese.zPosition = 15
         cheese.name = "cheeseItem"
         container.addChild(cheese)
@@ -432,7 +430,7 @@ extension KitchenScene {
         arrowLabel.fontSize = 14
         arrowLabel.fontColor = SKColor(red: 1, green: 0.8, blue: 0.2, alpha: 1)
         arrowLabel.position = CGPoint(
-            x: pastaX + 260, y: size.height * 0.50 - cheese.size.height * cheeseScale * 0.7)
+            x: centerX + 60, y: size.height * 0.50 - cheese.size.height * cheeseScale * 0.7)
         arrowLabel.zPosition = 15
         arrowLabel.name = "cheeseLabel"
         container.addChild(arrowLabel)
@@ -461,10 +459,6 @@ extension KitchenScene {
         if currentRecipeIndex == 0 {
             if cookingStep == 0 {
                 showBoilingPopup()
-            } else if cookingStep == 1 || cookingStep == 2 {
-                return
-            } else {
-                advanceCookingStep()
             }
         }
     }
@@ -484,6 +478,14 @@ extension KitchenScene {
                 SKAction.removeFromParent(),
             ]))
         rawPastaSprite = nil
+
+        if let dropZone = cookingContainer?.childNode(withName: "visible_drop_zone") {
+            dropZone.run(
+                SKAction.sequence([
+                    SKAction.fadeOut(withDuration: 0.3),
+                    SKAction.removeFromParent(),
+                ]))
+        }
 
         potSprite.run(
             SKAction.sequence([
@@ -538,12 +540,7 @@ extension KitchenScene {
 
     func startTiltDetection() {
         isWaitingForTilt = true
-        print(
-            "🍝 [DEBUG] startTiltDetection called, deviceMotionAvailable=\(motionManager.isDeviceMotionAvailable)"
-        )
-
         guard motionManager.isDeviceMotionAvailable else {
-            print("🍝 [DEBUG] No device motion — showing tap-to-drain button")
             let drainBtn = SKShapeNode(rectOf: CGSize(width: 260, height: 60), cornerRadius: 14)
             drainBtn.fillColor = SKColor(red: 0.2, green: 0.5, blue: 0.9, alpha: 1)
             drainBtn.strokeColor = .white
@@ -576,7 +573,6 @@ extension KitchenScene {
                 SKAction.wait(forDuration: 0.5),
                 SKAction.run { [weak self] in
                     guard let self = self, self.isWaitingForTilt else { return }
-                    print("🍝 [DEBUG] Starting device motion updates")
                     self.motionManager.deviceMotionUpdateInterval = 0.1
                     self.motionManager.startDeviceMotionUpdates(to: .main) {
                         [weak self] motion, _ in
@@ -607,10 +603,7 @@ extension KitchenScene {
     }
 
     func completeDrain() {
-        guard isWaitingForTilt else {
-            print("🍝 [DEBUG] completeDrain called but isWaitingForTilt already false — skipping")
-            return
-        }
+        guard isWaitingForTilt else { return }
         isWaitingForTilt = false
         motionManager.stopDeviceMotionUpdates()
         cookingContainer.childNode(withName: "drainButton")?.removeFromParent()
@@ -718,7 +711,8 @@ extension KitchenScene {
                     let macCheese = SKSpriteNode(imageNamed: "macchessepasta")
                     let resultScale = (self.size.height * 0.30) / macCheese.size.height
                     macCheese.setScale(resultScale)
-                    macCheese.position = self.potSprite.position
+                    macCheese.position = CGPoint(
+                        x: self.size.width * 0.40 - 160, y: self.size.height * 0.50)
                     macCheese.zPosition = 10
                     macCheese.alpha = 0
                     self.cookingContainer.addChild(macCheese)
@@ -759,9 +753,9 @@ extension KitchenScene {
         switch cookingStep {
         case 0:
             let boiling = SKSpriteNode(imageNamed: "boilingwater")
-            let bScale = (size.height * 0.55) / boiling.size.height
+            let bScale = (size.height * 0.45) / boiling.size.height
             boiling.setScale(bScale)
-            boiling.position = potSprite.position
+            boiling.position = CGPoint(x: potSprite.position.x - 40, y: potSprite.position.y)
             boiling.zPosition = 10
             boiling.alpha = 0
             boiling.name = "potSprite"
@@ -780,11 +774,10 @@ extension KitchenScene {
             }
 
         case 1:
-            // Move raw pasta a bit to the left (was +200, now +120)
             let rawPasta = SKSpriteNode(imageNamed: "rawpasta")
             let pScale = (size.height * 0.2) / rawPasta.size.height
             rawPasta.setScale(pScale)
-            rawPasta.position = CGPoint(x: centerX + 120, y: size.height * 0.50)
+            rawPasta.position = CGPoint(x: centerX + 20, y: size.height * 0.50)
             rawPasta.zPosition = 20
             rawPasta.name = "rawPastaSprite"
             cookingContainer.addChild(rawPasta)
@@ -797,24 +790,40 @@ extension KitchenScene {
                         SKAction.scale(to: pScale, duration: 0.5),
                     ])))
 
-            if showDebugOverlay {
-                let dropZone = SKShapeNode(rectOf: CGSize(width: 250, height: 250))
-                dropZone.strokeColor = .red
-                dropZone.lineWidth = 4
-                dropZone.position = CGPoint(x: potSprite.position.x - 40, y: potSprite.position.y)
-                dropZone.zPosition = 900
-                dropZone.name = "debug_drop_zone"
-                cookingContainer.addChild(dropZone)
+            // Stylish visual drop zone for the pasta
+            let dropZone = SKShapeNode(rectOf: CGSize(width: 220, height: 200), cornerRadius: 16)
+            dropZone.strokeColor = SKColor(white: 1.0, alpha: 0.5)
+            dropZone.fillColor = SKColor(white: 1.0, alpha: 0.1)
+            dropZone.lineWidth = 4
+            // Add a dashed line effect
+            let path = CGMutablePath()
+            path.addRoundedRect(
+                in: CGRect(x: -110, y: -100, width: 220, height: 200), cornerWidth: 16,
+                cornerHeight: 16)
+            let dashedPath = path.copy(dashingWithPhase: 0, lengths: [10, 10])
+            dropZone.path = dashedPath
 
-                let dropLbl = SKLabelNode(fontNamed: "Menlo-Bold")
-                dropLbl.text = "DROP PASTA IN THIS RED BOX"
-                dropLbl.fontSize = 12
-                dropLbl.fontColor = .red
-                dropLbl.position = CGPoint(x: 0, y: 135)
-                dropZone.addChild(dropLbl)
+            dropZone.position = CGPoint(x: centerX - 180, y: size.height * 0.50)
+            dropZone.zPosition = 5
+            dropZone.name = "visible_drop_zone"
+            cookingContainer.addChild(dropZone)
 
-                print("🍝 [DEBUG] Created visual drop zone at \(dropZone.position)")
-            }
+            let dropLbl = SKLabelNode(fontNamed: "Menlo-Bold")
+            dropLbl.text = "DROP HERE"
+            dropLbl.fontSize = 20
+            dropLbl.fontColor = SKColor(white: 1.0, alpha: 0.7)
+            dropLbl.position = CGPoint(x: 0, y: 0)
+            dropLbl.verticalAlignmentMode = .center
+            dropZone.addChild(dropLbl)
+
+            // Subtle pulse animation
+            dropZone.run(
+                SKAction.repeatForever(
+                    SKAction.sequence([
+                        SKAction.fadeAlpha(to: 0.6, duration: 0.8),
+                        SKAction.fadeAlpha(to: 1.0, duration: 0.8),
+                    ])
+                ))
 
             if let stepLabel = cookingContainer.childNode(withName: "stepLabel") as? SKLabelNode {
                 stepLabel.text = "Drag the pasta into the pot!"
@@ -854,9 +863,9 @@ extension KitchenScene {
 
         case 3:
             let served = SKSpriteNode(imageNamed: "macchessepasta")
-            let svScale = (size.height * 0.55) / served.size.height
+            let svScale = (size.height * 0.30) / served.size.height
             served.setScale(svScale)
-            served.position = potSprite.position
+            served.position = CGPoint(x: centerX - 160, y: size.height * 0.50)
             served.zPosition = 10
             served.alpha = 0
             served.name = "potSprite"
@@ -975,7 +984,6 @@ extension KitchenScene {
         let barNode = SKNode()
         let totalSteps = stepNames.count
 
-        // Dynamically adjust spacing to prevent the bar from going off-screen
         let maxAvailableWidth = size.width * 0.48
         let calculatedSpacing = maxAvailableWidth / CGFloat(max(1, totalSteps - 1))
         let spacing: CGFloat = min(130.0, calculatedSpacing)
@@ -1019,8 +1027,19 @@ extension KitchenScene {
 
             let stepLabel = SKLabelNode(fontNamed: "Menlo-Bold")
             stepLabel.text = stepNames[i]
-            stepLabel.fontSize = 18
-            stepLabel.fontColor = SKColor.darkGray
+            stepLabel.fontSize = 20
+
+            // Apply a strong drop shadow for contrast against the complex background
+            let shadow = SKLabelNode(fontNamed: "Menlo-Bold")
+            shadow.text = stepNames[i]
+            shadow.fontSize = 20
+            shadow.fontColor = .black
+            shadow.alpha = 0.5
+            shadow.position = CGPoint(x: 2, y: -2)
+            shadow.zPosition = -1
+            stepLabel.addChild(shadow)
+
+            stepLabel.fontColor = SKColor(white: 0.9, alpha: 1.0)
             stepLabel.horizontalAlignmentMode = .center
             stepLabel.position = CGPoint(x: 0, y: -45)
             stepLabel.zPosition = 51
@@ -1038,7 +1057,7 @@ extension KitchenScene {
         let activeColor = SKColor.white
         let completedColor = SKColor.systemGreen
         let inactiveColor = SKColor(white: 0.85, alpha: 1.0)
-        let inactiveTextColor = SKColor(white: 0.25, alpha: 1.0)
+        let inactiveTextColor = SKColor(white: 0.75, alpha: 1.0)
 
         if let trackFill = stepProgressBar?.childNode(withName: "trackFill") {
             let totalIcons = max(1, stepProgressIcons.count - 1)
@@ -1088,5 +1107,23 @@ extension KitchenScene {
                     ]))
             }
         }
+    }
+}
+
+// MARK: - Previews
+
+private class KitchenSceneInheritancePreview: KitchenScene {
+    override func didMove(to view: SKView) {
+        super.didMove(to: view)
+        // Fast-forward to the Inheritance phase
+        startInheritancePhase()
+    }
+}
+
+struct KitchenSceneInheritance_Previews: PreviewProvider {
+    static var previews: some View {
+        SpriteView(scene: KitchenSceneInheritancePreview(size: CGSize(width: 1920, height: 1080)))
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
     }
 }

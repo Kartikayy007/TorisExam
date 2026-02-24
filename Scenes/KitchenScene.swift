@@ -27,7 +27,7 @@ class KitchenScene: BaseScene {
     var previewInheritancePhase = false
     var previewMacAndCheese = false
     var previewPastaLayout = false
-    var showDebugOverlay = false
+    var showDebugOverlay = true
 
     var dialogBox: DialogBox!
     var roboExplain: SKSpriteNode!
@@ -93,7 +93,7 @@ class KitchenScene: BaseScene {
     var isDraggingCheese = false
 
     var prepareButton: SKShapeNode!
-    var prepItems: [SKLabelNode] = []
+    var prepItems: [SKNode] = []
     var currentPrepItem = 0
 
     var stepButtons: [SKNode] = []
@@ -296,16 +296,16 @@ class KitchenScene: BaseScene {
             code = "// Same method name,\n"
             code += "// different behavior!\n\n"
             if currentPrepItem >= 1 {
-                code += "sandwich.prepare()\n"
-                code += "  // → cuts in half \n\n"
+                code += "tomato.prepare()\n"
+                code += "  // → slices cleanly \n\n"
             }
             if currentPrepItem >= 2 {
-                code += "apple.prepare()\n"
-                code += "  // → washes clean \n\n"
+                code += "egg.prepare()\n"
+                code += "  // → cracks open \n\n"
             }
             if currentPrepItem >= 3 {
-                code += "juice.prepare()\n"
-                code += "  // → shakes up \n"
+                code += "orange.prepare()\n"
+                code += "  // → peels skin \n"
             }
 
         case .abstraction:
@@ -412,6 +412,10 @@ class KitchenScene: BaseScene {
             if abs(panelLocation.x) < codePanelWidth / 2
                 && abs(panelLocation.y) < codePanelHeight / 2
             {
+                if currentPhase == .intro {
+                    dialogBox.handleTap()
+                    return
+                }
                 isScrollingCodePanel = true
                 lastScrollY = location.y
                 return
@@ -427,12 +431,6 @@ class KitchenScene: BaseScene {
             if let overlay = popupOverlay {
 
                 let localPoint = overlay.convert(location, from: self)
-                if let closeBtn = overlay.childNode(withName: "popupClose") {
-                    if closeBtn.contains(localPoint) {
-                        closePopup(success: false)
-                        return
-                    }
-                }
 
                 if popupState == .painting {
                     isPainting = true
@@ -603,7 +601,7 @@ class KitchenScene: BaseScene {
                     let pastaX = centerX - 120
                     cheese.run(
                         SKAction.move(
-                            to: CGPoint(x: pastaX + 260, y: size.height * 0.50),
+                            to: CGPoint(x: centerX + 20, y: size.height * 0.50),
                             duration: 0.3))
                 }
             }
@@ -613,9 +611,9 @@ class KitchenScene: BaseScene {
         if isDraggingPasta, let pasta = rawPastaSprite {
             isDraggingPasta = false
             let distance = hypot(
-                pasta.position.x - (potSprite.position.x - 40),
+                pasta.position.x - potSprite.position.x,
                 pasta.position.y - potSprite.position.y)
-            if distance < potSprite.size.width * potSprite.xScale * 0.7 {  // Increased hitbox drop radius slightly
+            if distance < potSprite.size.width * potSprite.xScale * 0.7 {
                 pastaDroppedInPot()
             } else {
                 let centerX = size.width * 0.40
@@ -623,7 +621,7 @@ class KitchenScene: BaseScene {
                 let pScale = (size.height * 0.2) / unscaledHeight
                 pasta.run(
                     SKAction.move(
-                        to: CGPoint(x: centerX + 120, y: size.height * 0.50), duration: 0.3))
+                        to: CGPoint(x: centerX + 20, y: size.height * 0.50), duration: 0.3))
                 pasta.run(
                     SKAction.repeatForever(
                         SKAction.sequence([

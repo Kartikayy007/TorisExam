@@ -215,6 +215,9 @@ class ClosetScene: BaseScene {
     }
 
     private func showIntro() {
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.advanceStep()
+        }
         dialogBox.showDialog(
             name: "Robot",
             text:
@@ -224,6 +227,11 @@ class ClosetScene: BaseScene {
 
     private func advanceStep() {
         currentStep += 1
+
+        dialogBox.onDialogComplete = { [weak self] in
+            self?.advanceStep()
+        }
+
         switch currentStep {
         case 1:
             dialogBox.showDialog(
@@ -261,7 +269,7 @@ class ClosetScene: BaseScene {
             dialogBox.showDialog(
                 name: "Robot",
                 text:
-                    "Let's try it! Drag a pair of PANTS from the closet onto Tori. Find the right size!"
+                    "Now it's your turn. Tori needs his lucky Yellow Shirt and Blue Pants for the exam. Can you tryOn() the right ones?"
             )
         default:
             dialogBox.hideDialog()
@@ -276,6 +284,10 @@ class ClosetScene: BaseScene {
 
         let panelLocation = touch.location(in: codePanel)
         if abs(panelLocation.x) < codePanelWidth / 2 && abs(panelLocation.y) < codePanelHeight / 2 {
+            if !introComplete {
+                dialogBox.handleTap()
+                return
+            }
             isScrollingCodePanel = true
             lastScrollY = location.y
             return
