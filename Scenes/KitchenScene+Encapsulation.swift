@@ -162,6 +162,13 @@ extension KitchenScene {
         hint.fontColor = .gray
         hint.position = CGPoint(x: 0, y: -size.height * 0.4)
         overlay.addChild(hint)
+
+        let wait = SKAction.wait(forDuration: 10.0)
+        let autoFinish = SKAction.run { [weak self] in
+            guard self?.popupState == .painting else { return }
+            self?.paintingComplete()
+        }
+        overlay.run(SKAction.sequence([wait, autoFinish]), withKey: "autoPainter")
     }
 
     func paintAt(_ location: CGPoint) {
@@ -245,8 +252,8 @@ extension KitchenScene {
     func paintingComplete() {
         isPainting = false
         popupState = .none
+        popupOverlay?.removeAction(forKey: "autoPainter")
 
-        // Instantly reveal the entire colored sprite to fix the "patchy colored" look
         let fullReveal = SKSpriteNode(color: .white, size: CGSize(width: 2000, height: 2000))
         fullReveal.position = .zero
         paintMaskNode?.addChild(fullReveal)
