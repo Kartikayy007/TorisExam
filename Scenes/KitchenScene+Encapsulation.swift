@@ -105,7 +105,7 @@ extension KitchenScene {
         if item == "bread" {
             paintThreshold = 160
         } else if item == "spinach" {
-            paintThreshold = 220
+            paintThreshold = 100
         } else {
             paintThreshold = 140
         }
@@ -127,7 +127,7 @@ extension KitchenScene {
         title.position = CGPoint(x: 0, y: -size.height * 0.35)
         overlay.addChild(title)
 
-        let spriteScale: CGFloat = 1.8
+        let spriteScale: CGFloat = (item == "bread" || item == "spinach") ? 1.3 : 1.8
 
         let graySprite = SKSpriteNode(imageNamed: item)
         graySprite.setScale(spriteScale)
@@ -365,7 +365,8 @@ extension KitchenScene {
                     self.platformIngredients.removeAll()
 
                     let fullSandwich = SKSpriteNode(imageNamed: "sandwich")
-                    fullSandwich.position = self.sandwichZone
+                    fullSandwich.position = CGPoint(
+                        x: self.sandwichZone.x + 70, y: self.sandwichZone.y)
                     fullSandwich.setScale(0)
                     fullSandwich.zPosition = 30
                     fullSandwich.name = "fullSandwich"

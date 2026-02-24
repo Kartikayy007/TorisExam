@@ -9,12 +9,16 @@ import SwiftUI
 
 struct InstructionsView: View {
     let onContinue: () -> Void
+    let onDismiss: () -> Void
     @State private var isVisible = false
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.6)
                 .ignoresSafeArea()
+                .onTapGesture {
+                    onDismiss()
+                }
 
             VStack {
                 Spacer()
@@ -108,5 +112,5 @@ struct InstructionRow: View {
 }
 
 #Preview {
-    InstructionsView(onContinue: {})
+    InstructionsView(onContinue: {}, onDismiss: {})
 }

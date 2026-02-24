@@ -60,9 +60,14 @@ struct PauseMenuView: View {
             .opacity(isVisible ? 1 : 0)
 
             if showingInstructions {
-                InstructionsView(onContinue: {
-                    withAnimation { showingInstructions = false }
-                })
+                InstructionsView(
+                    onContinue: {
+                        withAnimation { showingInstructions = false }
+                    },
+                    onDismiss: {
+                        withAnimation { showingInstructions = false }
+                    }
+                )
                 .zIndex(100)
             }
         }

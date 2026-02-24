@@ -22,35 +22,43 @@ extension KitchenScene {
     private func setupAbstractionPhase() {
         currentPhase = .abstraction
         absorbedCount = 0
+        absorbedMethods.removeAll()
         stepButtons.removeAll()
         updateCodeDisplay()
 
-        let centerX = size.width * 0.40
+        let centerX = size.width * 0.35
         let centerY = size.height * 0.45
 
         packLunchButton = SKShapeNode(rectOf: CGSize(width: 280, height: 80), cornerRadius: 20)
         packLunchButton.fillColor = SKColor(white: 0.4, alpha: 1.0)
         packLunchButton.strokeColor = .white
         packLunchButton.lineWidth = 3
-        packLunchButton.position = CGPoint(x: centerX, y: centerY)
+        packLunchButton.position = CGPoint(x: centerX - 60, y: centerY)
         packLunchButton.zPosition = 10
         packLunchButton.name = "packLunchBtn"
         gameLayer.addChild(packLunchButton)
 
+        packLunchButton.run(
+            SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.scale(to: 1.08, duration: 0.8),
+                    SKAction.scale(to: 1.0, duration: 0.8),
+                ])))
+
         let bigLabel = SKLabelNode(fontNamed: "Menlo-Bold")
         bigLabel.text = "packLunch()"
-        bigLabel.fontSize = 24
+        bigLabel.fontSize = 32
         bigLabel.fontColor = .white
         bigLabel.verticalAlignmentMode = .center
         packLunchButton.addChild(bigLabel)
 
         let positions: [CGPoint] = [
-            CGPoint(x: centerX - 180, y: centerY + 180),
-            CGPoint(x: centerX + 180, y: centerY + 160),
-            CGPoint(x: centerX - 150, y: centerY - 150),
-            CGPoint(x: centerX + 180, y: centerY - 140),
-            CGPoint(x: centerX - 40, y: centerY + 220),
-            CGPoint(x: centerX + 60, y: centerY - 200),
+            CGPoint(x: centerX - 280, y: centerY + 180),
+            CGPoint(x: centerX - 200, y: centerY + 90),
+            CGPoint(x: centerX - 80, y: centerY + 220),
+            CGPoint(x: centerX + 40, y: centerY + 160),
+            CGPoint(x: centerX - 220, y: centerY + 300),
+            CGPoint(x: centerX - 60, y: centerY + 120),
         ]
 
         for i in 0..<stepMethods.count {
@@ -85,8 +93,9 @@ extension KitchenScene {
         )
     }
 
-    func absorbStep() {
+    func absorbStep(methodName: String) {
         absorbedCount += 1
+        absorbedMethods.append(methodName)
         updateCodeDisplay()
 
         if let miniConfetti = SKEmitterNode(fileNamed: "Confetti") {

@@ -40,7 +40,7 @@ struct MainMenuView: View {
                         Button(action: {
                             withAnimation { showingInstructions = true }
                         }) {
-                            Text("Start Packing")
+                            Text("Start")
                         }
                         .buttonStyle(MainMenuButtonStyle(index: 0, hoveredIndex: $hoveredIndex))
                         .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 0 } }
@@ -75,12 +75,17 @@ struct MainMenuView: View {
             .opacity(isVisible ? 1 : 0)
 
             if showingInstructions {
-                InstructionsView(onContinue: {
-                    withAnimation { showingInstructions = false }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        onStart()
+                InstructionsView(
+                    onContinue: {
+                        withAnimation { showingInstructions = false }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            onStart()
+                        }
+                    },
+                    onDismiss: {
+                        withAnimation { showingInstructions = false }
                     }
-                })
+                )
                 .zIndex(100)
             }
         }

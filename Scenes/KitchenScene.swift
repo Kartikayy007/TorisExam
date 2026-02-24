@@ -27,10 +27,10 @@ class KitchenScene: BaseScene {
     var previewInheritancePhase = false
     var previewMacAndCheese = false
     var previewPastaLayout = false
+    var previewAbstraction = false
     var showDebugOverlay = true
 
     var dialogBox: DialogBox!
-    var roboExplain: SKSpriteNode!
     var codePanel: SKShapeNode!
     var codeLabel: SKLabelNode!
     var codeCropNode: SKCropNode!
@@ -96,13 +96,15 @@ class KitchenScene: BaseScene {
     var prepItems: [SKNode] = []
     var currentPrepItem = 0
 
-    var stepButtons: [SKNode] = []
     var packLunchButton: SKShapeNode!
     var draggedStepButton: SKNode?
+    // For Abstraction phase tracking
     var absorbedCount = 0
+    var absorbedMethods: [String] = []
+    var stepButtons: [SKShapeNode] = []
     let stepMethods = [
-        "packSandwich()", "packPasta()", "sliceTomato()", "crackEgg()", "peelOrange()",
-        "closeBox()",
+        "boilWater()", "addPasta()", "drain()",
+        "serve()", "addCheese()", "packSandwich()",
     ]
 
     override func sceneDidSetup() {
@@ -131,7 +133,6 @@ class KitchenScene: BaseScene {
 
         if previewBoilingPopup {
             dialogBox.isHidden = true
-            roboExplain.isHidden = true
             currentPhase = .inheritance
             cookingStep = 0
             cookingContainer = SKNode()
@@ -143,20 +144,17 @@ class KitchenScene: BaseScene {
         }
 
         if previewPastaCooking {
-            roboExplain.run(SKAction.fadeOut(withDuration: 0.1))
             startInheritancePhase()
         }
 
         if previewInheritancePhase {
             dialogBox.isHidden = true
-            roboExplain.isHidden = true
             currentPhase = .inheritance
             startInheritancePhase()
         }
 
         if previewMacAndCheese {
             dialogBox.isHidden = true
-            roboExplain.isHidden = true
             currentPhase = .inheritance
             currentRecipeIndex = 1
             cookingContainer = SKNode()
@@ -171,10 +169,16 @@ class KitchenScene: BaseScene {
 
         if previewPastaLayout {
             dialogBox.isHidden = true
-            roboExplain.isHidden = true
             dialogBox.onDialogComplete = nil
             currentPhase = .inheritance
             startInheritancePhase()
+        }
+
+        if previewAbstraction {
+            dialogBox.isHidden = true
+            dialogBox.onDialogComplete = nil
+            currentPhase = .abstraction
+            startAbstractionPhase()
         }
     }
 
@@ -220,14 +224,6 @@ class KitchenScene: BaseScene {
         dialogBox.position = CGPoint(x: size.width / 2, y: 80)
         dialogBox.zPosition = 100
         gameLayer.addChild(dialogBox)
-
-        roboExplain = SKSpriteNode(imageNamed: "roboexplain")
-        let roboScale = (size.height * 0.25) / roboExplain.size.height
-        roboExplain.setScale(roboScale)
-        roboExplain.position = CGPoint(x: size.width * 0.08, y: 180)
-        roboExplain.zPosition = 101
-        roboExplain.alpha = 0
-        gameLayer.addChild(roboExplain)
     }
 
     func updateCodeDisplay() {
@@ -311,10 +307,8 @@ class KitchenScene: BaseScene {
 
         case .abstraction:
             code = "func packLunch() {\n"
-            for i in 0..<stepMethods.count {
-                if i < absorbedCount {
-                    code += "  \(stepMethods[i])\n"
-                }
+            for method in absorbedMethods {
+                code += "  \(method)\n"
             }
             code += "}\n\n"
             if absorbedCount >= stepMethods.count {
@@ -335,7 +329,6 @@ class KitchenScene: BaseScene {
     }
 
     private func showIntro() {
-        roboExplain.run(SKAction.fadeIn(withDuration: 0.3))
         dialogBox.showDialog(
             name: "Robot",
             text:
@@ -348,7 +341,6 @@ class KitchenScene: BaseScene {
                     "They are: Encapsulation, Inheritance, Polymorphism, and Abstraction. Let's start with the first one!"
             )
             self?.dialogBox.onDialogComplete = { [weak self] in
-                self?.roboExplain.run(SKAction.fadeOut(withDuration: 0.3))
                 self?.startEncapsulationPhase()
             }
         }
@@ -356,7 +348,7 @@ class KitchenScene: BaseScene {
 
     func clearPhaseNodes() {
         for child in gameLayer.children {
-            if child == codePanel || child == dialogBox || child == roboExplain { continue }
+            if child == codePanel || child == dialogBox { continue }
             if child.zPosition >= 5 && child.zPosition <= 20 {
                 child.removeFromParent()
             }
@@ -649,6 +641,9 @@ class KitchenScene: BaseScene {
         if let btn = draggedStepButton {
             if packLunchButton.frame.contains(location) {
                 btn.name = "absorbed"
+                let methodName =
+                    (btn.children.first(where: { $0 is SKLabelNode }) as? SKLabelNode)?.text
+                    ?? "unknown()"
                 btn.run(
                     SKAction.sequence([
                         SKAction.group([
@@ -658,7 +653,7 @@ class KitchenScene: BaseScene {
                         ]),
                         SKAction.removeFromParent(),
                     ]))
-                absorbStep()
+                absorbStep(methodName: methodName)
             } else {
                 if let dict = btn.userData,
                     let origX = dict["origX"] as? CGFloat,
@@ -741,5 +736,17 @@ struct PastaLayout_Previews: PreviewProvider {
             .ignoresSafeArea()
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("🍝 Pasta Layout Tool")
+    }
+}
+
+struct AbstractionPhase_Previews: PreviewProvider {
+    static var previews: some View {
+        let scene = KitchenScene(size: CGSize(width: 1024, height: 768))
+        scene.scaleMode = .aspectFill
+        scene.previewAbstraction = true
+        return SpriteView(scene: scene)
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Abstraction Phase Tool")
     }
 }

@@ -84,19 +84,8 @@ extension KitchenScene {
             potSprite.isHidden = true
         }
 
-        let stepLabel = SKLabelNode(fontNamed: "Menlo")
-        stepLabel.fontSize = 16
-        stepLabel.fontColor = SKColor(white: 0.9, alpha: 1)
-        stepLabel.position = CGPoint(
-            x: centerX, y: centerY - potSprite.size.height * potScale * 0.8)
-        stepLabel.zPosition = 15
-        stepLabel.name = "stepLabel"
-        cookingContainer.addChild(stepLabel)
-
         if index == 0 {
             setupProgressBar(stepNames: ["boil()", "addPasta()", "drain()", "serve()"])
-            updateProgressBar(completedSteps: 0)
-            stepLabel.text = ""
             dialogBox.showDialog(
                 name: "Robot",
                 text:
@@ -107,7 +96,6 @@ extension KitchenScene {
                 "boil()", "addPasta()", "drain()", "serve()", "addCheese()",
             ])
             updateProgressBar(completedSteps: 0)
-            stepLabel.text = "Mac & Cheese needs boiled pasta first!"
             dialogBox.onDialogComplete = { [weak self] in
                 self?.dialogBox.hideDialog()
                 self?.showInheritButton()
@@ -365,9 +353,8 @@ extension KitchenScene {
         guard let btn = cookingContainer.childNode(withName: "inheritButton") else { return }
         btn.removeFromParent()
 
-        // Fix unkillable Inherit button bug: Clear the previous dialog complete handler!
         dialogBox.onDialogComplete = nil
-        autoPlaying = true  // Block input during cinematic
+        autoPlaying = true
 
         showConfetti()
 
@@ -379,7 +366,7 @@ extension KitchenScene {
         let boiledPasta = SKSpriteNode(imageNamed: "boiledpasta")
         let bpScale = (size.height * 0.40) / boiledPasta.size.height
         boiledPasta.setScale(bpScale)
-        boiledPasta.position = CGPoint(x: centerX - 100, y: size.height * 0.50)
+        boiledPasta.position = CGPoint(x: centerX - 160, y: size.height * 0.50)
         boiledPasta.zPosition = 10
         boiledPasta.alpha = 0
         boiledPasta.name = "potSprite"
@@ -410,7 +397,7 @@ extension KitchenScene {
                 SKAction.run { [weak self] in
                     self?.dialogBox.hideDialog()
                     self?.showCheeseStep()
-                    self?.autoPlaying = false  // Restore input
+                    self?.autoPlaying = false
                 },
             ]))
     }
@@ -435,15 +422,15 @@ extension KitchenScene {
                     SKAction.scale(to: cheeseScale, duration: 0.5),
                 ])))
 
-        let arrowLabel = SKLabelNode(fontNamed: "Menlo-Bold")
-        arrowLabel.text = "NEW!"
-        arrowLabel.fontSize = 14
-        arrowLabel.fontColor = SKColor(red: 1, green: 0.8, blue: 0.2, alpha: 1)
-        arrowLabel.position = CGPoint(
-            x: centerX + 60, y: size.height * 0.50 - cheese.size.height * cheeseScale * 0.7)
-        arrowLabel.zPosition = 15
-        arrowLabel.name = "cheeseLabel"
-        container.addChild(arrowLabel)
+        // let arrowLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        // arrowLabel.text = "NEW!"
+        // arrowLabel.fontSize = 14
+        // arrowLabel.fontColor = SKColor(red: 1, green: 0.8, blue: 0.2, alpha: 1)
+        // arrowLabel.position = CGPoint(
+        //     x: centerX + 60, y: size.height * 0.50 - cheese.size.height * cheeseScale * 0.7)
+        // arrowLabel.zPosition = 15
+        // arrowLabel.name = "cheeseLabel"
+        // container.addChild(arrowLabel)
 
         if let stepLabel = container.childNode(withName: "stepLabel") as? SKLabelNode {
             stepLabel.text = "Drag the cheese onto the pasta!"
@@ -623,7 +610,7 @@ extension KitchenScene {
         let strain = SKSpriteNode(imageNamed: "pastaStrain")
         let sScale = (size.height * 0.45) / strain.size.height
         strain.setScale(sScale)
-        strain.position = CGPoint(x: centerX - 100, y: size.height * 0.50)
+        strain.position = CGPoint(x: centerX - 20, y: size.height * 0.50)
         strain.zPosition = 10
         strain.alpha = 0
         strain.name = "potSprite"
@@ -813,7 +800,7 @@ extension KitchenScene {
             let dashedPath = path.copy(dashingWithPhase: 0, lengths: [10, 10])
             dropZone.path = dashedPath
 
-            dropZone.position = CGPoint(x: centerX - 180, y: size.height * 0.50)
+            dropZone.position = CGPoint(x: centerX - 250, y: size.height * 0.50)
             dropZone.zPosition = 5
             dropZone.name = "visible_drop_zone"
             cookingContainer.addChild(dropZone)

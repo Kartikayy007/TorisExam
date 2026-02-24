@@ -54,14 +54,7 @@ class ClosetScene: BaseScene {
     override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
-
-        showPillarDefinition(
-            title: "Inheritance",
-            description:
-                "A child class automatically receives all properties and methods from its parent class, saving you from repeating code."
-        ) { [weak self] in
-            self?.showIntro()
-        }
+        showIntro()
     }
 
     private func setupScene() {
@@ -332,7 +325,7 @@ class ClosetScene: BaseScene {
                 guard selectedPantIndex == 1 else {
                     dialogBox.showDialog(
                         name: "Robot",
-                        text: "First, find the right PANTS for Tori! Try dragging a pair onto her."
+                        text: "First, find the right PANTS for Tori! Try dragging a pair onto him."
                     )
                     return
                 }
@@ -452,6 +445,8 @@ class ClosetScene: BaseScene {
                 text: "The Large pants fit perfectly! Now drag a SHIRT onto Tori!"
             )
         } else {
+            showIncorrectFeedback(
+                at: CGPoint(x: toriDropZone.position.x + 30, y: toriDropZone.position.y - 100))
             dialogBox.showDialog(
                 name: "Tori",
                 text: "These \(pantLabels[index]) pants don't fit right... Try another size!"
@@ -532,11 +527,15 @@ class ClosetScene: BaseScene {
     private func equipShirt(index: Int) {
         switch index {
         case 0:
+            showIncorrectFeedback(
+                at: CGPoint(x: toriDropZone.position.x + 30, y: toriDropZone.position.y + 100))
             dialogBox.showDialog(
                 name: "Tori",
                 text: "This red shirt is too small for me!"
             )
         case 1:
+            showIncorrectFeedback(
+                at: CGPoint(x: toriDropZone.position.x + 30, y: toriDropZone.position.y + 100))
             dialogBox.showDialog(
                 name: "Tori",
                 text: "This blue shirt is too short for me!"
@@ -557,6 +556,8 @@ class ClosetScene: BaseScene {
                     self?.showPackLunchDialog()
                 }
             } else {
+                showIncorrectFeedback(
+                    at: CGPoint(x: toriDropZone.position.x + 30, y: toriDropZone.position.y - 100))
                 dialogBox.showDialog(
                     name: "Tori",
                     text: "I need to put on the right pants first!"
@@ -565,6 +566,47 @@ class ClosetScene: BaseScene {
         default:
             break
         }
+    }
+
+    private func showIncorrectFeedback(at location: CGPoint, isStaticPreview: Bool = false) {
+        let crossNode = SKNode()
+        crossNode.position = location
+        crossNode.zPosition = 100
+        crossNode.setScale(0.1)
+        crossNode.alpha = 0
+
+        for angle in [CGFloat.pi / 4, -CGFloat.pi / 4] {
+            let line = SKShapeNode(rectOf: CGSize(width: 80, height: 16), cornerRadius: 8)
+            line.fillColor = .red
+            line.strokeColor = .white
+            line.lineWidth = 2
+            line.zRotation = angle
+            crossNode.addChild(line)
+        }
+        gameLayer.addChild(crossNode)
+
+        let appear = SKAction.group([
+            SKAction.scale(to: 1.0, duration: 0.2),
+            SKAction.fadeIn(withDuration: 0.2),
+        ])
+        appear.timingMode = .easeOut
+
+        if isStaticPreview {
+            crossNode.run(appear)
+            return
+        }
+
+        let wait = SKAction.wait(forDuration: 0.5)
+
+        let disappear = SKAction.group([
+            SKAction.scale(to: 1.5, duration: 0.3),
+            SKAction.fadeOut(withDuration: 0.3),
+        ])
+
+        crossNode.run(
+            SKAction.sequence([
+                appear, wait, disappear, SKAction.removeFromParent(),
+            ]))
     }
 
     private func showPackLunchDialog() {
