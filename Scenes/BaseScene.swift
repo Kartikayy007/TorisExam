@@ -1,6 +1,6 @@
 //
 //  BaseScene.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 07/02/26.
 //
@@ -20,19 +20,19 @@ class BaseScene: SKScene {
     var gameLayer: SKEffectNode!
     var isGamePaused = false
     private var hasSetup = false
+    var onPillarDefDismiss: (() -> Void)?
 
     override func didMove(to view: SKView) {
         super.didMove(to: view)
-        
+
         guard !hasSetup else { return }
         hasSetup = true
         setupBaseLayers()
         sceneDidSetup()
     }
 
-    
     func sceneDidSetup() {
-        
+
     }
 
     private func setupBaseLayers() {
@@ -83,10 +83,68 @@ class BaseScene: SKScene {
         if isGamePaused {
             return
         }
+
+        if let overlay = gameLayer.childNode(withName: "pillar_def_overlay") {
+            overlay.run(
+                SKAction.sequence([
+                    SKAction.fadeOut(withDuration: 0.3),
+                    SKAction.removeFromParent(),
+                ]))
+            onPillarDefDismiss?()
+            onPillarDefDismiss = nil
+            return
+        }
+
         handleTouch(at: location, touch: touch)
     }
 
     func handleTouch(at location: CGPoint, touch: UITouch) {
 
+    }
+
+    func showPillarDefinition(title: String, description: String, onDismiss: @escaping () -> Void) {
+        self.onPillarDefDismiss = onDismiss
+
+        let overlay = SKShapeNode(rectOf: size)
+        overlay.fillColor = SKColor(white: 0.1, alpha: 0.95)
+        overlay.strokeColor = .clear
+        overlay.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        overlay.zPosition = 500
+        overlay.name = "pillar_def_overlay"
+        overlay.alpha = 0
+        gameLayer.addChild(overlay)
+
+        let titleLabel = SKLabelNode(fontNamed: "AmericanTypewriter-Bold")
+        titleLabel.text = title
+        titleLabel.fontSize = 60
+        titleLabel.fontColor = SKColor(red: 0.9, green: 0.8, blue: 0.4, alpha: 1.0)
+        titleLabel.position = CGPoint(x: 0, y: 80)
+        overlay.addChild(titleLabel)
+
+        let descLabel = SKLabelNode(fontNamed: "AmericanTypewriter")
+        descLabel.text = description
+        descLabel.fontSize = 28
+        descLabel.fontColor = .white
+        descLabel.numberOfLines = 0
+        descLabel.preferredMaxLayoutWidth = size.width * 0.7
+        descLabel.horizontalAlignmentMode = .center
+        descLabel.position = CGPoint(x: 0, y: -20)
+        overlay.addChild(descLabel)
+
+        let tapLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        tapLabel.text = "Tap to Continue"
+        tapLabel.fontSize = 20
+        tapLabel.fontColor = .gray
+        tapLabel.position = CGPoint(x: 0, y: -150)
+        overlay.addChild(tapLabel)
+
+        tapLabel.run(
+            SKAction.repeatForever(
+                SKAction.sequence([
+                    SKAction.fadeAlpha(to: 0.4, duration: 0.8),
+                    SKAction.fadeAlpha(to: 1.0, duration: 0.8),
+                ])))
+
+        overlay.run(SKAction.fadeIn(withDuration: 0.4))
     }
 }

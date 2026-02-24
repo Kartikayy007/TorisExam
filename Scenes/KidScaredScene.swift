@@ -1,6 +1,6 @@
 //
 //  KidScaredScene.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 25/01/26.
 //

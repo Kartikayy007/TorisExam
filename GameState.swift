@@ -1,6 +1,6 @@
 //
 //  GameState.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 07/02/26.
 //

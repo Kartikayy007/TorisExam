@@ -1,6 +1,6 @@
 //
 //  PauseMenuView.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 07/02/26.
 //
@@ -13,45 +13,58 @@ struct PauseMenuView: View {
     let onReset: () -> Void
 
     @State private var isVisible = false
+    @State private var showingInstructions = false
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.08, green: 0.08, blue: 0.12),
-                    Color(red: 0.15, green: 0.12, blue: 0.2),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .opacity(isVisible ? 1 : 0)
+            Image("Room")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .ignoresSafeArea()
+                .blur(radius: 12)
+                .opacity(isVisible ? 1 : 0)
+
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
 
             VStack(spacing: 30) {
                 Text("PAUSED")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .font(.custom("AmericanTypewriter-Bold", size: 64))
+                    .foregroundColor(Color(red: 1.0, green: 0.8, blue: 0.2))
+                    .shadow(color: .black.opacity(0.8), radius: 4, x: 2, y: 2)
 
                 VStack(spacing: 16) {
                     Button("Resume") {
                         onResume()
                     }
-                    .buttonStyle(MenuButtonStyle(color: .blue))
+                    .buttonStyle(MenuButtonStyle())
 
                     Button("Restart") {
                         onReset()
                     }
-                    .buttonStyle(MenuButtonStyle(color: .orange))
+                    .buttonStyle(MenuButtonStyle())
+
+                    Button("Help") {
+                        withAnimation { showingInstructions = true }
+                    }
+                    .buttonStyle(MenuButtonStyle())
 
                     Button("Quit to Menu") {
                         onQuit()
                     }
-                    .buttonStyle(MenuButtonStyle(color: .red))
+                    .buttonStyle(MenuButtonStyle())
                 }
                 .padding(.top, 20)
             }
             .scaleEffect(isVisible ? 1 : 0.8)
             .opacity(isVisible ? 1 : 0)
+
+            if showingInstructions {
+                InstructionsView(onContinue: {
+                    withAnimation { showingInstructions = false }
+                })
+                .zIndex(100)
+            }
         }
         .onAppear {
             withAnimation(.easeOut(duration: 0.3)) {
@@ -62,16 +75,18 @@ struct PauseMenuView: View {
 }
 
 struct MenuButtonStyle: ButtonStyle {
-    var color: Color = .blue
-
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 24, weight: .semibold))
-            .foregroundColor(.white)
-            .frame(width: 220, height: 55)
+            .font(.custom("AmericanTypewriter-Bold", size: 28))
+            .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.1))
+            .frame(width: 260, height: 60)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(color.opacity(configuration.isPressed ? 0.6 : 0.8))
+                    .fill(Color(red: 0.94, green: 0.87, blue: 0.73))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(red: 0.35, green: 0.25, blue: 0.15), lineWidth: 4)
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)

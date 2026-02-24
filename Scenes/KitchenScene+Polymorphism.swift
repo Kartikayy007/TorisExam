@@ -10,12 +10,22 @@ import SpriteKit
 extension KitchenScene {
 
     func startPolymorphismPhase() {
+        showPillarDefinition(
+            title: "Polymorphism",
+            description:
+                "Different classes can have a method with the exact same name, but each performs its own unique behavior when called."
+        ) { [weak self] in
+            self?.setupPolymorphismPhase()
+        }
+    }
+
+    private func setupPolymorphismPhase() {
         currentPhase = .polymorphism
         currentPrepItem = 0
         updateCodeDisplay()
 
         let items = ["rawtomato", "rawegg", "orange"]
-        let centerX = size.width * 0.35
+        let centerX = size.width * 0.30
         let spacing: CGFloat = size.width * 0.12
 
         for i in 0..<3 {
@@ -24,11 +34,12 @@ extension KitchenScene {
 
             let spriteHeight: CGFloat = sprite.texture != nil ? sprite.size.height : 100
 
-            let pScale = (size.height * 0.22) / max(spriteHeight, 1)
+            let pScale = (size.height * 0.17) / max(spriteHeight, 1)
             sprite.setScale(pScale)
+            sprite.anchorPoint = CGPoint(x: 0.5, y: 0.0)
 
             sprite.position = CGPoint(
-                x: centerX - spacing + CGFloat(i) * spacing, y: size.height * 0.58)
+                x: centerX - spacing + CGFloat(i) * spacing, y: size.height * 0.445)
             sprite.zPosition = 10
             sprite.alpha = i == 0 ? 1.0 : 0.3
             sprite.name = "prepItem_\(i)"
@@ -36,18 +47,25 @@ extension KitchenScene {
             prepItems.append(sprite)
         }
 
-        prepareButton = SKShapeNode(rectOf: CGSize(width: 250, height: 60), cornerRadius: 14)
+        prepareButton = SKShapeNode(rectOf: CGSize(width: 200, height: 50), cornerRadius: 14)
         prepareButton.fillColor = SKColor(red: 0.8, green: 0.4, blue: 0.1, alpha: 1)
         prepareButton.strokeColor = .white
         prepareButton.lineWidth = 3
-        prepareButton.position = CGPoint(x: centerX, y: size.height * 0.42)
+        prepareButton.position = CGPoint(x: centerX, y: size.height * 0.36)
         prepareButton.zPosition = 10
         prepareButton.name = "prepareButton"
         gameLayer.addChild(prepareButton)
 
+        // Add throbbing pulse animation
+        let pulseUp = SKAction.scale(to: 1.05, duration: 0.8)
+        pulseUp.timingMode = .easeInEaseOut
+        let pulseDown = SKAction.scale(to: 1.0, duration: 0.8)
+        pulseDown.timingMode = .easeInEaseOut
+        prepareButton.run(SKAction.repeatForever(SKAction.sequence([pulseUp, pulseDown])))
+
         let btnLabel = SKLabelNode(fontNamed: "Menlo-Bold")
         btnLabel.text = ".prepare()"
-        btnLabel.fontSize = 24
+        btnLabel.fontSize = 20
         btnLabel.fontColor = .white
         btnLabel.verticalAlignmentMode = .center
         prepareButton.addChild(btnLabel)
@@ -79,13 +97,16 @@ extension KitchenScene {
 
         switch currentPrepItem {
         case 0:
-            let knife = SKLabelNode(text: "🔪")
-            knife.fontSize = 50
-            knife.position = CGPoint(x: item.position.x + 40, y: item.position.y + 40)
-            knife.zPosition = 20
-            gameLayer.addChild(knife)
+            let cutLabel = SKLabelNode(fontNamed: "AmericanTypewriter-Bold")
+            cutLabel.text = "Slice!"
+            cutLabel.fontSize = 28
+            cutLabel.fontColor = .systemRed
+            cutLabel.position = CGPoint(
+                x: item.position.x, y: item.position.y + item.frame.height + 20)
+            cutLabel.zPosition = 20
+            gameLayer.addChild(cutLabel)
 
-            knife.run(
+            cutLabel.run(
                 SKAction.sequence([
                     SKAction.moveBy(x: -40, y: -40, duration: 0.2),
                     SKAction.moveBy(x: 20, y: 20, duration: 0.1),
@@ -105,6 +126,23 @@ extension KitchenScene {
                 ]))
 
         case 1:
+            let crackLabel = SKLabelNode(fontNamed: "AmericanTypewriter-Bold")
+            crackLabel.text = "Crack!"
+            crackLabel.fontSize = 28
+            crackLabel.fontColor = .orange
+            crackLabel.position = CGPoint(
+                x: item.position.x, y: item.position.y + item.frame.height + 20)
+            crackLabel.zPosition = 20
+            gameLayer.addChild(crackLabel)
+
+            crackLabel.run(
+                SKAction.sequence([
+                    SKAction.moveBy(x: 0, y: 15, duration: 0.2),
+                    SKAction.moveBy(x: 0, y: 5, duration: 0.1),
+                    SKAction.fadeOut(withDuration: 0.2),
+                    SKAction.removeFromParent(),
+                ]))
+
             item.run(
                 SKAction.sequence([
                     SKAction.moveBy(x: 0, y: 40, duration: 0.15),
@@ -119,16 +157,19 @@ extension KitchenScene {
                 ]))
 
         default:
-                        let hands = SKLabelNode(text: "�")
-            hands.fontSize = 50
-            hands.position = CGPoint(x: item.position.x, y: item.position.y)
-            hands.zPosition = 20
-            gameLayer.addChild(hands)
+            let peelLabel = SKLabelNode(fontNamed: "AmericanTypewriter-Bold")
+            peelLabel.text = "Peel!"
+            peelLabel.fontSize = 28
+            peelLabel.fontColor = .systemYellow
+            peelLabel.position = CGPoint(
+                x: item.position.x, y: item.position.y + item.frame.height + 20)
+            peelLabel.zPosition = 20
+            gameLayer.addChild(peelLabel)
 
-            hands.run(
+            peelLabel.run(
                 SKAction.sequence([
-                    SKAction.scale(to: 1.3, duration: 0.2),
-                    SKAction.scale(to: 1.0, duration: 0.2),
+                    SKAction.moveBy(x: 0, y: 15, duration: 0.2),
+                    SKAction.moveBy(x: 0, y: 5, duration: 0.1),
                     SKAction.fadeOut(withDuration: 0.2),
                     SKAction.removeFromParent(),
                 ]))
@@ -162,11 +203,17 @@ extension KitchenScene {
                         self?.dialogBox.showDialog(
                             name: "Robot",
                             text:
-                                "One method, three different results! The tomato got sliced, the egg got cracked, and the orange got peeled. That's POLYMORPHISM! One more to go!"
+                                "One method, three different results! The tomato got sliced, the egg got cracked, and the orange got peeled. That's POLYMORPHISM!"
                         )
                         self?.dialogBox.onDialogComplete = { [weak self] in
-                            self?.clearPhaseNodes()
-                            self?.startAbstractionPhase()
+                            self?.dialogBox.showDialog(
+                                name: "Robot",
+                                text: "One more to go. Next up: ABSTRACTION!"
+                            )
+                            self?.dialogBox.onDialogComplete = { [weak self] in
+                                self?.clearPhaseNodes()
+                                self?.startAbstractionPhase()
+                            }
                         }
                     },
                 ]))

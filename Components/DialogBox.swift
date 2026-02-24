@@ -1,6 +1,6 @@
 //
 //  DialogBox.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 23/01/26.
 //

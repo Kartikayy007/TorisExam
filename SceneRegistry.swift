@@ -8,6 +8,7 @@
 import SpriteKit
 
 enum SceneType: Int, CaseIterable {
+    case mainMenu = -1
     case bedroom = 0
     case clock = 1
     case bedroomPostAlarm = 2
@@ -22,6 +23,7 @@ enum SceneType: Int, CaseIterable {
 
     var displayName: String {
         switch self {
+        case .mainMenu: return "Main Menu"
         case .bedroom: return "Bedroom (Sleeping)"
         case .clock: return "Alarm Clock"
         case .bedroomPostAlarm: return "Bedroom (Awake)"
@@ -47,6 +49,8 @@ enum SceneType: Int, CaseIterable {
     @MainActor
     func createScene(size: CGSize) -> BaseScene {
         switch self {
+        case .mainMenu:
+            return MainMenuScene(size: size)
         case .bedroom:
             return BedroomScene(size: size, isPostAlarm: false)
         case .clock:
@@ -72,7 +76,7 @@ enum SceneType: Int, CaseIterable {
         }
     }
 
-    static var first: SceneType { .bedroom }
+    static var first: SceneType { .mainMenu }
     static var last: SceneType { .kitchen }
 }
 
@@ -80,7 +84,7 @@ enum SceneType: Int, CaseIterable {
 class SceneNavigator {
     static let shared = SceneNavigator()
 
-    var currentSceneType: SceneType = .bedroom
+    var currentSceneType: SceneType = .mainMenu
     private(set) var history: [SceneType] = []
 
     private init() {}

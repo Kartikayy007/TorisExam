@@ -1,6 +1,6 @@
 //
 //  ClockScene.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 24/01/26.
 //

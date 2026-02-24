@@ -101,7 +101,8 @@ class KitchenScene: BaseScene {
     var draggedStepButton: SKNode?
     var absorbedCount = 0
     let stepMethods = [
-        "cutSandwich()", "washApple()", "shakeJuice()", "closeLid()", "addIcePack()", "zipBag()",
+        "packSandwich()", "packPasta()", "sliceTomato()", "crackEgg()", "peelOrange()",
+        "closeBox()",
     ]
 
     override func sceneDidSetup() {
@@ -344,7 +345,7 @@ class KitchenScene: BaseScene {
             self?.dialogBox.showDialog(
                 name: "Robot",
                 text:
-                    "First up: ENCAPSULATION! It means bundling data together and hiding it inside a class — so nothing outside can mess with it."
+                    "They are: Encapsulation, Inheritance, Polymorphism, and Abstraction. Let's start with the first one!"
             )
             self?.dialogBox.onDialogComplete = { [weak self] in
                 self?.roboExplain.run(SKAction.fadeOut(withDuration: 0.3))
@@ -401,10 +402,7 @@ class KitchenScene: BaseScene {
         }
     }
 
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-
+    override func handleTouch(at location: CGPoint, touch: UITouch) {
         if isGamePaused || autoPlaying { return }
 
         if popupOverlay == nil && boilingOverlay == nil {
@@ -519,6 +517,15 @@ class KitchenScene: BaseScene {
         case .abstraction:
             let tappedNodes = nodes(at: location)
             for node in tappedNodes {
+                if let name = node.name, name == "packLunchFinalAction" {
+                    triggerFinalPackingAnimation()
+                    return
+                }
+                if let pName = node.parent?.name, pName == "packLunchFinalAction" {
+                    triggerFinalPackingAnimation()
+                    return
+                }
+
                 if let name = node.name, name.starts(with: "stepBtn_") {
                     draggedStepButton = node
                     return
@@ -670,17 +677,13 @@ class KitchenScene: BaseScene {
         isScrollingCodePanel = false
         isDraggingGauge = false
     }
-
-    override func handleTouch(at location: CGPoint, touch: UITouch) {
-    }
 }
 
 // MARK: - Previews
 
 struct KitchenScene_Previews: PreviewProvider {
     static var previews: some View {
-        SpriteView(scene: KitchenScene(size: CGSize(width: 1920, height: 1080)))
-            .ignoresSafeArea()
+        SpriteView(scene: KitchenScene(size: CGSize(width: 1920, height: 1080))).ignoresSafeArea()
             .previewInterfaceOrientation(.landscapeLeft)
             .previewDisplayName("Full Kitchen Scene")
     }

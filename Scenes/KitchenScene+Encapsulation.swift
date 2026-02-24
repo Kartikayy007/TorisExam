@@ -10,6 +10,16 @@ import SpriteKit
 extension KitchenScene {
 
     func startEncapsulationPhase() {
+        showPillarDefinition(
+            title: "Encapsulation",
+            description:
+                "Bundling data (ingredients) inside a class so they are protected from outside interference."
+        ) { [weak self] in
+            self?.setupEncapsulationPhase()
+        }
+    }
+
+    private func setupEncapsulationPhase() {
         currentPhase = .encapsulation
         ingredientsAdded.removeAll()
         ingredientButtons.removeAll()
@@ -47,6 +57,32 @@ extension KitchenScene {
             sprite.color = .gray
             sprite.colorBlendFactor = 1.0
             sprite.alpha = 0.4
+
+            let glowContainer = SKEffectNode()
+            glowContainer.name = "glowContainer"
+            glowContainer.shouldRasterize = true
+            glowContainer.filter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 15])
+            glowContainer.position = .zero
+            glowContainer.zPosition = -1
+            glowContainer.alpha = 0
+
+            let innerGlow = SKSpriteNode(imageNamed: item)
+            innerGlow.color = .white
+            innerGlow.colorBlendFactor = 1.0
+            innerGlow.setScale(1.1)
+            glowContainer.addChild(innerGlow)
+
+            sprite.addChild(glowContainer)
+
+            glowContainer.run(
+                SKAction.repeatForever(
+                    SKAction.sequence([
+                        SKAction.fadeAlpha(to: 0.7, duration: 0.8),
+                        SKAction.fadeAlpha(to: 0.2, duration: 0.8),
+                    ])
+                )
+            )
+
             gameLayer.addChild(sprite)
             platformIngredients[item] = sprite
 
@@ -267,6 +303,15 @@ extension KitchenScene {
         ingredientsAdded.append(item)
 
         gameLayer.enumerateChildNodes(withName: "platform_\(item)") { node, _ in
+            if let glow = node.childNode(withName: "glowContainer") {
+                glow.removeAllActions()
+                glow.run(
+                    SKAction.sequence([
+                        SKAction.fadeOut(withDuration: 0.2),
+                        SKAction.removeFromParent(),
+                    ]))
+            }
+
             node.removeAllActions()
             node.run(
                 SKAction.sequence([
@@ -278,14 +323,14 @@ extension KitchenScene {
                     SKAction.scale(to: 0.3, duration: 0.1),
                 ]))
 
-            let check = SKLabelNode(text: "✅")
-            check.fontSize = 25
-            check.position = CGPoint(x: 10, y: -20)
-            check.verticalAlignmentMode = .center
-            check.zPosition = 5
-            check.setScale(0)
-            node.addChild(check)
-            check.run(SKAction.scale(to: 1.0, duration: 0.2))
+            //            let check = SKLabelNode(text: "")
+            //            check.fontSize = 25
+            //            check.position = CGPoint(x: 10, y: -20)
+            //            check.verticalAlignmentMode = .center
+            //            check.zPosition = 5
+            //            check.setScale(0)
+            //            node.addChild(check)
+            //            check.run(SKAction.scale(to: 1.0, duration: 0.2))
         }
 
         updateCodeDisplay()
@@ -334,7 +379,7 @@ extension KitchenScene {
                     self.dialogBox.showDialog(
                         name: "Robot",
                         text:
-                            "The bread wraps around all the ingredients \u{2014} they're now hidden inside! That's ENCAPSULATION: data bundled together and protected from the outside."
+                            "The bread wraps around all the ingredients \u{2014} they're now hidden inside! That's ENCAPSULATION."
                     )
                     self.dialogBox.onDialogComplete = { [weak self] in
                         self?.gameLayer.childNode(withName: "fullSandwich")?.run(
@@ -345,18 +390,11 @@ extension KitchenScene {
                             ]))
                         self?.dialogBox.showDialog(
                             name: "Robot",
-                            text:
-                                "Time for the 2nd pillar \u{2014} INHERITANCE! It means creating new classes based on existing ones. A child class can reuse all the methods of its parent, without rewriting them."
+                            text: "Next up: INHERITANCE!"
                         )
                         self?.dialogBox.onDialogComplete = { [weak self] in
-                            self?.dialogBox.showDialog(
-                                name: "Robot",
-                                text:
-                                    "Let's see it in action! We'll cook pasta. First, a basic recipe \u{2014} then a fancier one that INHERITS all the base steps."
-                            )
-                            self?.dialogBox.onDialogComplete = { [weak self] in
-                                self?.startInheritancePhase()
-                            }
+                            self?.clearPhaseNodes()
+                            self?.startInheritancePhase()
                         }
                     }
                 },

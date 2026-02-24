@@ -1,16 +1,12 @@
 //
 //  PersistentSpriteView.swift
-//  Tori's Exam
+//  TorisExam
 //
 //  Created by kartikay on 16/02/26.
 //
 
 import SpriteKit
 import SwiftUI
-
-
-
-
 
 struct PersistentSpriteView: UIViewRepresentable {
     let scene: SKScene
@@ -24,10 +20,10 @@ struct PersistentSpriteView: UIViewRepresentable {
     }
 
     func updateUIView(_ skView: SKView, context: Context) {
-        
+
         if skView.scene !== scene {
             skView.presentScene(scene)
         }
-        
+
     }
 }

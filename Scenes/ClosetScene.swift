@@ -54,7 +54,14 @@ class ClosetScene: BaseScene {
     override func sceneDidSetup() {
         setupScene()
         setupDialogBox()
-        showIntro()
+
+        showPillarDefinition(
+            title: "Inheritance",
+            description:
+                "A child class automatically receives all properties and methods from its parent class, saving you from repeating code."
+        ) { [weak self] in
+            self?.showIntro()
+        }
     }
 
     private func setupScene() {

@@ -12,6 +12,16 @@ import SwiftUI
 extension KitchenScene {
 
     func startInheritancePhase() {
+        showPillarDefinition(
+            title: "Inheritance",
+            description:
+                "A child class automatically receives all properties and methods from its parent class, saving you from repeating code."
+        ) { [weak self] in
+            self?.setupInheritancePhase()
+        }
+    }
+
+    private func setupInheritancePhase() {
         currentPhase = .inheritance
         currentRecipeIndex = 0
         cookingStep = 0
@@ -262,7 +272,7 @@ extension KitchenScene {
     }
 
     func completeBoiling() {
-        guard popupState == .boiling else { return }  // Double guard
+        guard popupState == .boiling else { return }
         popupState = .none
         isDraggingGauge = false
         cookingContainer?.isHidden = false
@@ -941,11 +951,11 @@ extension KitchenScene {
         dialogBox.onDialogComplete = { [weak self] in
             self?.dialogBox.showDialog(
                 name: "Robot",
-                text:
-                    "class MacAndCheese: BasicPasta — the colon means it inherits everything. Next up: POLYMORPHISM!"
+                text: "Next up: POLYMORPHISM!"
             )
             self?.dialogBox.onDialogComplete = { [weak self] in
                 self?.cookingContainer?.removeFromParent()
+                self?.clearPhaseNodes()
                 self?.startPolymorphismPhase()
             }
         }
