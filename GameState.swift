@@ -11,6 +11,7 @@ import SwiftUI
 enum GameScreen {
     case mainMenu
     case playing
+    case examHall
 }
 
 @MainActor
@@ -24,6 +25,13 @@ class GameStateManager: ObservableObject {
         scene.scaleMode = .aspectFill
         currentScene = scene
         currentScreen = .playing
+        isPaused = false
+    }
+
+    func startExam() {
+        currentScene?.removeFromParent()
+        currentScene = nil
+        currentScreen = .examHall
         isPaused = false
     }
 

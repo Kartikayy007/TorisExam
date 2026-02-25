@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     let onStart: () -> Void
+    let onStartExam: () -> Void
 
     @State private var isVisible = false
     @State private var showingInstructions = false
@@ -30,7 +31,7 @@ struct MainMenuView: View {
                     Spacer()
 
                     VStack(alignment: .leading, spacing: -5) {
-                        Text("TorisExam")
+                        Text("Toris Exam")
                             .font(.custom("AmericanTypewriter-Bold", size: 84))
                             .foregroundColor(Color(red: 1.0, green: 0.8, blue: 0.2))
                             .shadow(color: .black.opacity(0.6), radius: 4, x: 2, y: 2)
@@ -60,6 +61,15 @@ struct MainMenuView: View {
                         }
                         .buttonStyle(MainMenuButtonStyle(index: 2, hoveredIndex: $hoveredIndex))
                         .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 2 } }
+                        }
+
+                        Button(action: {
+                            onStartExam()
+                        }) {
+                            Text("Final Exam (AI)")
+                        }
+                        .buttonStyle(MainMenuButtonStyle(index: 3, hoveredIndex: $hoveredIndex))
+                        .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 3 } }
                         }
                     }
                     .padding(.top, 20)
@@ -117,6 +127,6 @@ struct MainMenuButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    MainMenuView(onStart: {})
+    MainMenuView(onStart: {}, onStartExam: {})
         .previewInterfaceOrientation(.landscapeLeft)
 }

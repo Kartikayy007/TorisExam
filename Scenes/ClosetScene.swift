@@ -258,12 +258,6 @@ class ClosetScene: BaseScene {
                     "Classes also have METHODS — these are actions! Our Clothing class has a tryOn() method. Methods describe what an object CAN DO."
             )
         case 5:
-            dialogBox.showDialog(
-                name: "Robot",
-                text:
-                    "So to recap: CLASS = blueprint, OBJECT = real thing, PROPERTIES = what it has, METHODS = what it can do!"
-            )
-        case 6:
             introComplete = true
             glowHitboxes(pantHitboxes)
             dialogBox.showDialog(

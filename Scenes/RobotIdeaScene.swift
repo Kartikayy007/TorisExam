@@ -46,8 +46,7 @@ class RobotIdeaScene: BaseScene {
 
     private func startDialogSequence() {
         dialogues = [
-            "I have an idea!",
-            "Why don't you get ready, and I'll teach you OOP along the way!",
+            "I have an idea! Why don't you get ready, and I'll teach you OOP along the way!"
         ]
         currentIndex = 0
         showCurrentDialog()

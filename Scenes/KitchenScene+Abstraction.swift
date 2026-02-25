@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import UIKit
 
 extension KitchenScene {
 
@@ -52,13 +53,18 @@ extension KitchenScene {
         bigLabel.verticalAlignmentMode = .center
         packLunchButton.addChild(bigLabel)
 
+        let gridYStart = centerY + 100
+        let gridXStart = centerX - 180
+        let xSpacing: CGFloat = 240
+        let ySpacing: CGFloat = 70
+
         let positions: [CGPoint] = [
-            CGPoint(x: centerX - 280, y: centerY + 180),
-            CGPoint(x: centerX - 200, y: centerY + 90),
-            CGPoint(x: centerX - 80, y: centerY + 220),
-            CGPoint(x: centerX + 40, y: centerY + 160),
-            CGPoint(x: centerX - 220, y: centerY + 300),
-            CGPoint(x: centerX - 60, y: centerY + 120),
+            CGPoint(x: gridXStart, y: gridYStart + ySpacing * 2),
+            CGPoint(x: gridXStart + xSpacing, y: gridYStart + ySpacing * 2),
+            CGPoint(x: gridXStart, y: gridYStart + ySpacing),
+            CGPoint(x: gridXStart + xSpacing, y: gridYStart + ySpacing),
+            CGPoint(x: gridXStart, y: gridYStart),
+            CGPoint(x: gridXStart + xSpacing, y: gridYStart),
         ]
 
         for i in 0..<stepMethods.count {
@@ -91,9 +97,38 @@ extension KitchenScene {
             text:
                 "Last pillar — ABSTRACTION! We can hide all these steps behind one simple function. Drag each step into packLunch() to combine them!"
         )
+
+        let handCursor: SKNode
+        let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .bold)
+        if let uiImage = UIImage(systemName: "hand.point.up.left.fill", withConfiguration: config)?
+            .withTintColor(.white, renderingMode: .alwaysOriginal)
+        {
+            let texture = SKTexture(image: uiImage)
+            handCursor = SKSpriteNode(texture: texture)
+        } else {
+            let label = SKLabelNode(text: "👆")
+            label.fontSize = 50
+            handCursor = label
+        }
+        handCursor.position = positions[3]
+        handCursor.zPosition = 100
+        gameLayer.addChild(handCursor)
+
+        let dragToPack = SKAction.move(to: packLunchButton.position, duration: 1.0)
+        let fadeOut = SKAction.fadeOut(withDuration: 0.2)
+        let resetPos = SKAction.run { handCursor.position = positions[3] }
+        let fadeIn = SKAction.fadeIn(withDuration: 0.2)
+        handCursor.run(
+            SKAction.repeatForever(
+                SKAction.sequence([
+                    fadeIn, SKAction.wait(forDuration: 0.2), dragToPack, fadeOut, resetPos,
+                    SKAction.wait(forDuration: 0.5),
+                ])))
+        handCursor.name = "handCursor"
     }
 
     func absorbStep(methodName: String) {
+        gameLayer.childNode(withName: "handCursor")?.removeFromParent()
         absorbedCount += 1
         absorbedMethods.append(methodName)
         updateCodeDisplay()

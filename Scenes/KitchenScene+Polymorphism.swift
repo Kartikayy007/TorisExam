@@ -85,6 +85,7 @@ extension KitchenScene {
         prepareButton.run(
             SKAction.sequence([
                 SKAction.run { [weak self] in
+                    self?.prepareButton.name = ""  // Disable button to block re-taps
                     self?.prepareButton.fillColor = SKColor(
                         red: 1.0, green: 0.6, blue: 0.2, alpha: 1)
                 },
@@ -192,6 +193,15 @@ extension KitchenScene {
 
         if currentPrepItem < prepItems.count {
             prepItems[currentPrepItem].run(SKAction.fadeAlpha(to: 1.0, duration: 0.3))
+
+            // Auto-trigger next item!
+            run(
+                SKAction.sequence([
+                    SKAction.wait(forDuration: 1.2),
+                    SKAction.run { [weak self] in
+                        self?.prepareCurrentItem()
+                    },
+                ]))
         }
 
         if currentPrepItem >= 3 {

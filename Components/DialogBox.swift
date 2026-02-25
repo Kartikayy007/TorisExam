@@ -78,7 +78,7 @@ class DialogBox: SKNode {
         self.alpha = 0
     }
 
-    func showDialog(name: String, text: String, typingSpeed: TimeInterval = 0.03) {
+    func showDialog(name: String, text: String, typingSpeed: TimeInterval = 0.005) {
         nameLabel.text = name
         fullText = text
         currentCharacterIndex = 0

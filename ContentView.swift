@@ -16,24 +16,53 @@ struct ContentView: View {
         ZStack {
             switch gameState.currentScreen {
             case .mainMenu:
-                MainMenuView(onStart: {
-                    // Trigger the blur
-                    withAnimation(.easeInOut(duration: 0.6)) {
-                        isTransitioning = true
-                    }
-
-                    // Wait for the screen to blur, then swap the view underneath
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                        gameState.startGame()
-                        // Fade the blur back out into the new scene
-                        withAnimation(.easeInOut(duration: 0.8)) {
-                            isTransitioning = false
+                MainMenuView(
+                    onStart: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            isTransitioning = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            gameState.startGame()
+                            withAnimation(.easeInOut(duration: 0.8)) {
+                                isTransitioning = false
+                            }
+                        }
+                    },
+                    onStartExam: {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            isTransitioning = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            gameState.startExam()
+                            withAnimation(.easeInOut(duration: 0.8)) {
+                                isTransitioning = false
+                            }
                         }
                     }
-                })
+                )
 
             case .playing:
                 GamePlayView(gameState: gameState)
+
+            case .examHall:
+                if #available(iOS 26.0, macOS 16.0, *) {
+                    ExamHallView(gameState: gameState)
+                } else {
+                    VStack(spacing: 20) {
+                        Text("Apple Intelligence Required")
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                        Text("This feature requires iOS 26.0 or macOS 16.0.")
+                            .foregroundColor(.gray)
+                        Button("Go Back") {
+                            gameState.quitToMainMenu()
+                        }
+                        .padding()
+                        .background(Color.red.opacity(0.8))
+                        .cornerRadius(8)
+                        .foregroundColor(.white)
+                    }
+                }
             }
         }
         .blur(radius: isTransitioning ? 30 : 0)

@@ -49,7 +49,6 @@ class RobotIntroScene: BaseScene {
             "AHHHHH!!!",
             "I'm going to fail!",
             "I don't know what to do... IDK IDK...",
-            "Someone help me!!",
         ]
         currentIndex = 0
         showCurrentDialog()
