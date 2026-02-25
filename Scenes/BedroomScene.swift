@@ -120,7 +120,6 @@ class BedroomScene: BaseScene {
         currentDialogIndex += 1
 
         if !isPostAlarm {
-            // Fix: advance to clock after the single "snoring peacefully" dialogue is tapped
             if currentDialogIndex >= dialogues.count {
                 transitionToClock()
             } else {
@@ -152,7 +151,6 @@ class BedroomScene: BaseScene {
         zLabel.fontColor = .white
         zLabel.alpha = 0
 
-        // Start near boy's head
         let headX = size.width * 0.38
         let headY = size.height * 0.54
         zLabel.position = CGPoint(
@@ -162,7 +160,6 @@ class BedroomScene: BaseScene {
         zLabel.zPosition = 10
         gameLayer.addChild(zLabel)
 
-        // Float up and fade
         let floatUp = SKAction.moveBy(x: CGFloat.random(in: 20...50), y: 150, duration: 2.0)
         let fadeSequence = SKAction.sequence([
             SKAction.fadeIn(withDuration: 0.5),

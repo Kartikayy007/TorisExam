@@ -1,4 +1,5 @@
 import FoundationModels
+import SpriteKit
 import SwiftUI
 
 @available(iOS 26.0, macOS 16.0, *)
@@ -38,86 +39,92 @@ struct ExamHallView: View {
     @State private var currentQuestionIndex = 0
     @State private var selectedAnswers: [Int: String] = [:]
 
+    private var currentDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yy"
+        return formatter.string(from: Date())
+    }
+
     var body: some View {
         ZStack {
-            Image("Room")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .ignoresSafeArea()
-                .blur(radius: 10)
+            if examState == .loading {
+                loadingView()
+            } else {
+                Image("woodedbg")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .ignoresSafeArea()
+                    .blur(radius: 10)
 
-            Color.black.opacity(0.4).ignoresSafeArea()
+                Color.black.opacity(0.4).ignoresSafeArea()
 
-            // Clipboard Setup
-            ZStack(alignment: .top) {
-                // Brown Board
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(red: 0.7, green: 0.45, blue: 0.25))
-                    .frame(maxWidth: 900, maxHeight: 1100)
-                    .shadow(radius: 10)
+                ZStack(alignment: .top) {
 
-                // White Paper
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(Color.white)
-                    .frame(maxWidth: 820, maxHeight: 1020)
-                    .padding(.top, 40)
-                    .shadow(radius: 2)
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(red: 0.7, green: 0.45, blue: 0.25))
+                        .frame(maxWidth: 1100, maxHeight: 1100)
+                        .shadow(radius: 10)
 
-                // Silver Clip
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color(white: 0.9), Color(white: 0.6)]),
-                            startPoint: .top,
-                            endPoint: .bottom
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color.white)
+                        .frame(maxWidth: 1020, maxHeight: 1020)
+                        .padding(.top, 40)
+                        .shadow(radius: 2)
+
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color(white: 0.9), Color(white: 0.6)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
                         )
-                    )
-                    .frame(width: 300, height: 60)
-                    .shadow(radius: 3)
-                    .offset(y: -15)
+                        .frame(width: 300, height: 60)
+                        .shadow(radius: 3)
+                        .offset(y: -15)
 
-                // Content Layer
-                VStack {
-                    Text("EXAM: ROBOTICS 101")
-                        .font(.custom("AmericanTypewriter-Bold", size: 48))
-                        .foregroundColor(.black)
-                        .padding(.top, 80)
-                        .padding(.bottom, 20)
+                    VStack {
+                        Text("EXAM: OOPS")
+                            .font(.custom("AmericanTypewriter-Bold", size: 48))
+                            .foregroundColor(.black)
+                            .padding(.top, 80)
+                            .padding(.bottom, 20)
 
-                    if examState != .loading {
-                        HStack {
-                            Text("NAME: Tori")
-                            Spacer()
-                            Text("DATE: _____")
+                        if examState != .loading {
+                            HStack {
+                                Text("NAME: Tori")
+                                Spacer()
+                                Text("DATE: \(currentDate)")
+                            }
+                            .font(.custom("AmericanTypewriter", size: 28))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 60)
+                            .padding(.bottom, 30)
                         }
-                        .font(.custom("AmericanTypewriter", size: 28))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 30)
+
+                        Spacer()
+
+                        switch examState {
+                        case .loading:
+                            EmptyView()
+                        case .testing:
+                            if let paper = paper {
+                                testingView(paper: paper)
+                            }
+                        case .grading:
+                            gradingView()
+                        case .scorecard:
+                            if let paper = paper {
+                                scorecardView(paper: paper)
+                            }
+                        }
+
+                        Spacer()
                     }
-
-                    Spacer()
-
-                    switch examState {
-                    case .loading:
-                        loadingView()
-                    case .testing:
-                        if let paper = paper {
-                            testingView(paper: paper)
-                        }
-                    case .grading:
-                        gradingView()
-                    case .scorecard:
-                        if let paper = paper {
-                            scorecardView(paper: paper)
-                        }
-                    }
-
-                    Spacer()
+                    .frame(maxWidth: 1020, maxHeight: 1020)
                 }
-                .frame(maxWidth: 820, maxHeight: 1020)
+                .padding(.vertical, 40)
             }
-            .padding(.vertical, 40)
         }
         .onAppear {
             generateExam()
@@ -138,7 +145,7 @@ struct ExamHallView: View {
                     generating: ExamPaper.self
                 )
 
-                DispatchQueue.main.async {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.paper = response.content
                     withAnimation {
                         self.examState = .testing
@@ -211,7 +218,7 @@ struct ExamHallView: View {
                         optionD: "To inherit from a superclass", correctOption: "B",
                         explanation: "The init method sets up the initial state of an object."),
                 ])
-                DispatchQueue.main.async {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.paper = mockPaper
                     withAnimation {
                         self.examState = .testing
@@ -221,29 +228,53 @@ struct ExamHallView: View {
         }
     }
 
-    // MARK: - Subviews
-
     @ViewBuilder
     private func loadingView() -> some View {
-        VStack(spacing: 30) {
-            ProgressView()
-                .scaleEffect(2.5)
-                .progressViewStyle(CircularProgressViewStyle(tint: .black))
+        ZStack {
+            SpriteView(scene: getBusScene())
+                .ignoresSafeArea()
 
-            Text("Robot is printing your personalized AI exam...")
-                .font(.custom("AmericanTypewriter", size: 28))
-                .foregroundColor(.gray)
+            VStack {
+                Spacer()
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.8)
+
+                    Text("Arriving at School... Generating Exam...")
+                        .font(.custom("AmericanTypewriter", size: 14))
+                        .foregroundColor(.white)
+                    Spacer()
+                }
+                .padding(.leading, 30)
+                .padding(.bottom, 30)
+            }
         }
+    }
+
+    private func getBusScene() -> BusScene {
+        let scene = BusScene(size: CGSize(width: 1920, height: 1080))
+        scene.scaleMode = .aspectFill
+        return scene
     }
 
     @ViewBuilder
     private func testingView(paper: ExamPaper) -> some View {
         ScrollView(showsIndicators: true) {
             VStack(alignment: .leading, spacing: 50) {
-                Text("SECTION A: MULTIPLE CHOICE (10 Questions)")
-                    .font(.custom("AmericanTypewriter-Bold", size: 28))
-                    .foregroundColor(.black)
-                    .padding(.bottom, 10)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("SECTION A: MULTIPLE CHOICE (10 Questions)")
+                        .font(.custom("AmericanTypewriter-Bold", size: 28))
+                        .foregroundColor(.black)
+
+                    HStack {
+                        Image(systemName: "chevron.up.chevron.down")
+                        Text("Scroll down to view all questions")
+                    }
+                    .font(.custom("AmericanTypewriter", size: 18))
+                    .foregroundColor(Color.gray)
+                }
+                .padding(.bottom, 10)
 
                 ForEach(0..<10, id: \.self) { index in
                     let q = paper.questions[index]
@@ -264,7 +295,6 @@ struct ExamHallView: View {
                     }
                 }
 
-                // Submit Button
                 HStack {
                     Spacer()
                     Button(action: {
@@ -295,7 +325,7 @@ struct ExamHallView: View {
             selectedAnswers[questionIndex] = letter
         }) {
             HStack(spacing: 15) {
-                // Checkbox styling (like drawing on paper)
+
                 ZStack {
                     RoundedRectangle(cornerRadius: 4)
                         .stroke(Color.black, lineWidth: 2)
@@ -303,7 +333,7 @@ struct ExamHallView: View {
                     if isSelected {
                         Image(systemName: "checkmark")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.blue)  // Blue ink look
+                            .foregroundColor(.blue)
                     }
                 }
 
@@ -351,7 +381,7 @@ struct ExamHallView: View {
             Text(pass ? "EXAM PASSED!" : "EXAM FAILED")
                 .font(.custom("AmericanTypewriter-Bold", size: 64))
                 .foregroundColor(pass ? .green : .red)
-                .rotationEffect(.degrees(-5))  // give it a fun "stamped" look
+                .rotationEffect(.degrees(-5))
                 .scaleEffect(1.1)
                 .padding(.bottom, 20)
 

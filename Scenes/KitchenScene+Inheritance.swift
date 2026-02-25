@@ -787,12 +787,10 @@ extension KitchenScene {
                         SKAction.scale(to: pScale, duration: 0.5),
                     ])))
 
-            // Stylish visual drop zone for the pasta
             let dropZone = SKShapeNode(rectOf: CGSize(width: 220, height: 200), cornerRadius: 16)
             dropZone.strokeColor = SKColor(white: 1.0, alpha: 0.5)
             dropZone.fillColor = SKColor(white: 1.0, alpha: 0.1)
             dropZone.lineWidth = 4
-            // Add a dashed line effect
             let path = CGMutablePath()
             path.addRoundedRect(
                 in: CGRect(x: -110, y: -100, width: 220, height: 200), cornerWidth: 16,
@@ -813,7 +811,6 @@ extension KitchenScene {
             dropLbl.verticalAlignmentMode = .center
             dropZone.addChild(dropLbl)
 
-            // Subtle pulse animation
             dropZone.run(
                 SKAction.repeatForever(
                     SKAction.sequence([
@@ -1026,7 +1023,6 @@ extension KitchenScene {
             stepLabel.text = stepNames[i]
             stepLabel.fontSize = 20
 
-            // Apply a strong drop shadow for contrast against the complex background
             let shadow = SKLabelNode(fontNamed: "Menlo-Bold")
             shadow.text = stepNames[i]
             shadow.fontSize = 20
@@ -1107,12 +1103,10 @@ extension KitchenScene {
     }
 }
 
-// MARK: - Previews
 
 private class KitchenSceneInheritancePreview: KitchenScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
-        // Fast-forward to the Inheritance phase
         startInheritancePhase()
     }
 }

@@ -20,6 +20,7 @@ enum SceneType: Int, CaseIterable {
     case closet = 8
     case blueprint = 9
     case kitchen = 10
+    case bus = 11
 
     var displayName: String {
         switch self {
@@ -35,6 +36,7 @@ enum SceneType: Int, CaseIterable {
         case .closet: return "Closet Mini-Game"
         case .blueprint: return "Blueprint Hub"
         case .kitchen: return "Kitchen Mini-Game"
+        case .bus: return "Bus to Exam"
         }
     }
 
@@ -73,11 +75,13 @@ enum SceneType: Int, CaseIterable {
             return BlueprintScene(size: size)
         case .kitchen:
             return KitchenScene(size: size)
+        case .bus:
+            return BusScene(size: size)
         }
     }
 
     static var first: SceneType { .mainMenu }
-    static var last: SceneType { .kitchen }
+    static var last: SceneType { .bus }
 }
 
 @MainActor

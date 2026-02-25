@@ -13,6 +13,7 @@ struct MainMenuView: View {
 
     @State private var isVisible = false
     @State private var showingInstructions = false
+    @State private var isHelpPopup = false
     @State private var floatOffset: CGFloat = 0.0
     @State private var hoveredIndex: Int? = 0
 
@@ -39,6 +40,7 @@ struct MainMenuView: View {
 
                     VStack(alignment: .leading, spacing: 15) {
                         Button(action: {
+                            isHelpPopup = false
                             withAnimation { showingInstructions = true }
                         }) {
                             Text("Start")
@@ -55,6 +57,7 @@ struct MainMenuView: View {
                         }
 
                         Button(action: {
+                            isHelpPopup = true
                             withAnimation { showingInstructions = true }
                         }) {
                             Text("Help")
@@ -94,7 +97,8 @@ struct MainMenuView: View {
                     },
                     onDismiss: {
                         withAnimation { showingInstructions = false }
-                    }
+                    },
+                    isHelpMenu: isHelpPopup
                 )
                 .zIndex(100)
             }
@@ -117,9 +121,11 @@ struct MainMenuButtonStyle: ButtonStyle {
         configuration.label
             .font(.custom("AmericanTypewriter-Bold", size: isSelected ? 42 : 28))
             .foregroundColor(
-                isSelected ? Color(red: 1.0, green: 0.8, blue: 0.2) : .white.opacity(0.6)
+                isSelected ? Color(red: 1.0, green: 0.8, blue: 0.2) : .white
             )
-            .shadow(color: isSelected ? .black.opacity(0.8) : .clear, radius: 4, x: 2, y: 2)
+            .shadow(
+                color: isSelected ? .black.opacity(0.8) : .black.opacity(0.5), radius: 4, x: 2, y: 2
+            )
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .animation(.interpolatingSpring(stiffness: 170, damping: 15), value: isSelected)
             .contentShape(Rectangle())

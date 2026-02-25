@@ -241,6 +241,7 @@ extension KitchenScene {
     }
 
     private func finishAbstractionGame() {
+        self.autoPlaying = false
         showConfetti()
         currentPhase = .done
         updateCodeDisplay()
@@ -250,14 +251,25 @@ extension KitchenScene {
             text: "All the steps are now hidden inside packLunch()! That's ABSTRACTION!"
         )
         dialogBox.onDialogComplete = { [weak self] in
-            self?.clearPhaseNodes()
-            self?.dialogBox.showDialog(
-                name: "Tori",
-                text: "My lunch is all packed! Time for school!"
+            guard let self = self else { return }
+            self.clearPhaseNodes()
+
+            let robo = SKSpriteNode(imageNamed: "roboidea")
+            robo.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+            robo.zPosition = 10
+            let scale =
+                min(self.size.width / robo.size.width, self.size.height / robo.size.height) * 0.8
+            robo.setScale(max(scale, 1.0))
+            self.gameLayer.addChild(robo)
+
+            self.dialogBox.showDialog(
+                name: "Robot",
+                text: "You are ready for school, let's go!"
             )
-            self?.dialogBox.onDialogComplete = {
-                self?.autoPlaying = false
-                self?.navigateTo(.thankYou)
+            self.dialogBox.onDialogComplete = {
+                self.autoPlaying = false
+                NotificationCenter.default.post(
+                    name: Notification.Name("TriggerStartExam"), object: nil)
             }
         }
     }

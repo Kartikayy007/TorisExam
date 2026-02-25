@@ -10,6 +10,7 @@ import SwiftUI
 struct InstructionsView: View {
     let onContinue: () -> Void
     let onDismiss: () -> Void
+    var isHelpMenu: Bool = false
     @State private var isVisible = false
 
     var body: some View {
@@ -44,8 +45,8 @@ struct InstructionsView: View {
 
                 Spacer()
 
-                Button(action: onContinue) {
-                    Text("Continue")
+                Button(action: isHelpMenu ? onDismiss : onContinue) {
+                    Text(isHelpMenu ? "Close" : "Continue")
                         .font(.custom("AmericanTypewriter-Bold", size: 28))
                         .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.1))
                         .padding(.vertical, 12)
@@ -112,5 +113,5 @@ struct InstructionRow: View {
 }
 
 #Preview {
-    InstructionsView(onContinue: {}, onDismiss: {})
+    InstructionsView(onContinue: {}, onDismiss: {}, isHelpMenu: false)
 }

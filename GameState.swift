@@ -20,6 +20,14 @@ class GameStateManager: ObservableObject {
     @Published var isPaused: Bool = false
     @Published var currentScene: BaseScene?
 
+    init() {
+        NotificationCenter.default.addObserver(
+            forName: Notification.Name("TriggerStartExam"), object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.startExam()
+        }
+    }
+
     func startGame() {
         let scene = BedroomScene(size: CGSize(width: 1920, height: 1080))
         scene.scaleMode = .aspectFill
