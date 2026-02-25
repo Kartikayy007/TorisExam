@@ -62,10 +62,10 @@ extension KitchenScene {
         ]
 
         for i in 0..<stepMethods.count {
-            let btn = SKShapeNode(rectOf: CGSize(width: 170, height: 40), cornerRadius: 8)
+            let btn = SKShapeNode(rectOf: CGSize(width: 230, height: 50), cornerRadius: 10)
             btn.fillColor = SKColor(red: 0.5, green: 0.3, blue: 0.3, alpha: 0.9)
             btn.strokeColor = .white
-            btn.lineWidth = 1
+            btn.lineWidth = 2
             btn.position = positions[i]
             btn.zPosition = 15
             btn.name = "stepBtn_\(i)"
@@ -76,9 +76,9 @@ extension KitchenScene {
 
             gameLayer.addChild(btn)
 
-            let label = SKLabelNode(fontNamed: "Menlo")
+            let label = SKLabelNode(fontNamed: "Menlo-Bold")
             label.text = stepMethods[i]
-            label.fontSize = 13
+            label.fontSize = 24
             label.fontColor = .white
             label.verticalAlignmentMode = .center
             btn.addChild(label)
@@ -128,7 +128,7 @@ extension KitchenScene {
             dialogBox.showDialog(
                 name: "Robot",
                 text:
-                    "All the steps are now hidden inside packLunch()! One simple call does everything."
+                    "All the steps are now hidden inside packLunch()! One simple call does everything. Click on the packLunch() button"
             )
             dialogBox.onDialogComplete = { [weak self] in
                 self?.dialogBox.showDialog(
