@@ -89,6 +89,7 @@ class BedroomScene: BaseScene {
         currentDialogIndex = 0
         showCurrentDialogue()
         spawnZzz()
+        startBreathingAnimation()
     }
 
     private func startPostAlarmSequence() {
@@ -151,11 +152,12 @@ class BedroomScene: BaseScene {
         zLabel.fontColor = .white
         zLabel.alpha = 0
 
-        let headX = size.width * 0.38
-        let headY = size.height * 0.54
+        // Above Tori's head (right side of face, upper portion)
+        let headX = size.width * 0.42
+        let headY = size.height * 0.72
         zLabel.position = CGPoint(
-            x: headX + CGFloat.random(in: -20...20),
-            y: headY + CGFloat.random(in: 0...20)
+            x: headX + CGFloat.random(in: -15...25),
+            y: headY + CGFloat.random(in: 0...15)
         )
         zLabel.zPosition = 10
         gameLayer.addChild(zLabel)
@@ -175,6 +177,19 @@ class BedroomScene: BaseScene {
                 SKAction.wait(forDuration: Double.random(in: 0.8...1.5)),
                 SKAction.run { [weak self] in self?.spawnZzz() },
             ]))
+    }
+
+    private func startBreathingAnimation() {
+        guard !isPostAlarm else { return }
+        // Visible chest-rise / fall — 1.0 → 1.03 scale over 2.0s per half-cycle
+        let baseScale = boy.xScale
+        let breatheIn = SKAction.scale(to: baseScale * 1.03, duration: 2.0)
+        let breatheOut = SKAction.scale(to: baseScale, duration: 2.0)
+        breatheIn.timingMode = .easeInEaseOut
+        breatheOut.timingMode = .easeInEaseOut
+        boy.run(
+            SKAction.repeatForever(SKAction.sequence([breatheIn, breatheOut])),
+            withKey: "breathing")
     }
 
     private func transitionToClock() {

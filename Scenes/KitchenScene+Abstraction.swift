@@ -254,13 +254,30 @@ extension KitchenScene {
             guard let self = self else { return }
             self.clearPhaseNodes()
 
-            let robo = SKSpriteNode(imageNamed: "roboidea")
-            robo.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
-            robo.zPosition = 10
+            self.codePanel.run(
+                SKAction.sequence([
+                    SKAction.fadeOut(withDuration: 0.5),
+                    SKAction.run { self.codePanel.isHidden = true },
+                ])
+            )
+
+            let robo = SKSpriteNode(imageNamed: "RoboIdea")
             let scale =
-                min(self.size.width / robo.size.width, self.size.height / robo.size.height) * 0.8
+                min(self.size.width / robo.size.width, self.size.height / robo.size.height) * 0.75
             robo.setScale(max(scale, 1.0))
+            robo.position = CGPoint(x: self.size.width / 2, y: self.size.height * 0.38)
+            robo.zPosition = 10
+            robo.alpha = 0
             self.gameLayer.addChild(robo)
+
+            robo.run(
+                SKAction.group([
+                    SKAction.fadeIn(withDuration: 0.5),
+                    SKAction.move(
+                        to: CGPoint(x: self.size.width / 2, y: self.size.height * 0.52),
+                        duration: 0.5),
+                ])
+            )
 
             self.dialogBox.showDialog(
                 name: "Robot",

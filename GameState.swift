@@ -19,6 +19,7 @@ class GameStateManager: ObservableObject {
     @Published var currentScreen: GameScreen = .mainMenu
     @Published var isPaused: Bool = false
     @Published var currentScene: BaseScene?
+    @Published var storyCompleted: Bool = UserDefaults.standard.bool(forKey: "storyCompleted")
 
     init() {
         NotificationCenter.default.addObserver(
@@ -26,6 +27,16 @@ class GameStateManager: ObservableObject {
         ) { [weak self] _ in
             self?.startExam()
         }
+        NotificationCenter.default.addObserver(
+            forName: Notification.Name("StoryCompleted"), object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.markStoryCompleted()
+        }
+    }
+
+    func markStoryCompleted() {
+        storyCompleted = true
+        UserDefaults.standard.set(true, forKey: "storyCompleted")
     }
 
     func startGame() {

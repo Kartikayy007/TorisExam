@@ -20,7 +20,6 @@ class BusScene: BaseScene {
 
         let heightScale = size.height
 
-        
         busBg1 = SKSpriteNode(imageNamed: "busbg")
         busBg1.anchorPoint = CGPoint(x: 0, y: 0.5)
         let bgScale = heightScale / busBg1.size.height
@@ -29,26 +28,23 @@ class BusScene: BaseScene {
         busBg1.zPosition = 1
         gameLayer.addChild(busBg1)
 
-        
         busBg2 = SKSpriteNode(imageNamed: "busbg")
         busBg2.anchorPoint = CGPoint(x: 0, y: 0.5)
         busBg2.setScale(bgScale)
-        
+
         let bgScaledWidth = busBg1.size.width * bgScale
         busBg2.position = CGPoint(x: bgScaledWidth - 2, y: size.height / 2)
         busBg2.zPosition = 1
         gameLayer.addChild(busBg2)
 
-        
         busSceneImg = SKSpriteNode(imageNamed: "busscene")
         busSceneImg.position = CGPoint(x: size.width / 2, y: size.height / 2)
         let busScaleX = size.width / busSceneImg.size.width
         let busScaleY = size.height / busSceneImg.size.height
-        busSceneImg.setScale(max(busScaleX, busScaleY))
+        busSceneImg.setScale(min(busScaleX, busScaleY))
         busSceneImg.zPosition = 5
         gameLayer.addChild(busSceneImg)
 
-        
         let moveAction = SKAction.moveBy(
             x: -bgScaledWidth, y: 0, duration: TimeInterval(bgScaledWidth / moveSpeed))
         let resetAction = SKAction.moveBy(x: bgScaledWidth, y: 0, duration: 0)
@@ -57,12 +53,15 @@ class BusScene: BaseScene {
         busBg1.run(loopAction)
         busBg2.run(loopAction)
 
-        
         let moveUp = SKAction.moveBy(x: 0, y: 4, duration: 0.08)
         let moveDown = SKAction.moveBy(x: 0, y: -4, duration: 0.08)
         let vibrate = SKAction.repeatForever(SKAction.sequence([moveUp, moveDown]))
         busSceneImg.run(vibrate)
 
+        // Mark story as completed after bus scene plays
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            NotificationCenter.default.post(name: Notification.Name("StoryCompleted"), object: nil)
+        }
     }
 }
 

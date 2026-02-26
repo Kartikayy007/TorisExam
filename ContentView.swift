@@ -38,7 +38,8 @@ struct ContentView: View {
                                 isTransitioning = false
                             }
                         }
-                    }
+                    },
+                    storyCompleted: gameState.storyCompleted
                 )
 
             case .playing:
