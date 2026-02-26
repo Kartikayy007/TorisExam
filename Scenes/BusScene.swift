@@ -9,33 +9,35 @@ import SpriteKit
 import SwiftUI
 
 class BusScene: BaseScene {
-    private var busBg1: SKSpriteNode!
-    private var busBg2: SKSpriteNode!
     private var busSceneImg: SKSpriteNode!
 
     override func sceneDidSetup() {
         backgroundColor = SKColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.0)
 
-        let moveSpeed: CGFloat = 200.0
+        let moveSpeed: CGFloat = 400.0
 
         let heightScale = size.height
 
-        busBg1 = SKSpriteNode(imageNamed: "busbg")
-        busBg1.anchorPoint = CGPoint(x: 0, y: 0.5)
-        let bgScale = heightScale / busBg1.size.height
-        busBg1.setScale(bgScale)
-        busBg1.position = CGPoint(x: 0, y: size.height / 2)
-        busBg1.zPosition = 1
-        gameLayer.addChild(busBg1)
+        let bgTexture = SKTexture(imageNamed: "busbg")
+        let bgTextureHeight = max(1.0, bgTexture.size().height)
+        let bgScale = heightScale / bgTextureHeight
+        let bgScaledWidth = bgTexture.size().width * bgScale
+        let spacing = bgScaledWidth - 1
 
-        busBg2 = SKSpriteNode(imageNamed: "busbg")
-        busBg2.anchorPoint = CGPoint(x: 0, y: 0.5)
-        busBg2.setScale(bgScale)
+        let moveAction = SKAction.moveBy(
+            x: -spacing, y: 0, duration: TimeInterval(spacing / moveSpeed))
+        let resetAction = SKAction.moveBy(x: spacing, y: 0, duration: 0)
+        let loopAction = SKAction.repeatForever(SKAction.sequence([moveAction, resetAction]))
 
-        let bgScaledWidth = busBg1.size.width * bgScale
-        busBg2.position = CGPoint(x: bgScaledWidth - 2, y: size.height / 2)
-        busBg2.zPosition = 1
-        gameLayer.addChild(busBg2)
+        for i in 0..<3 {
+            let busBg = SKSpriteNode(texture: bgTexture)
+            busBg.anchorPoint = CGPoint(x: 0, y: 0.5)
+            busBg.setScale(bgScale)
+            busBg.position = CGPoint(x: CGFloat(i) * spacing, y: size.height / 2)
+            busBg.zPosition = 1
+            gameLayer.addChild(busBg)
+            busBg.run(loopAction)
+        }
 
         busSceneImg = SKSpriteNode(imageNamed: "busscene")
         busSceneImg.position = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -45,20 +47,11 @@ class BusScene: BaseScene {
         busSceneImg.zPosition = 5
         gameLayer.addChild(busSceneImg)
 
-        let moveAction = SKAction.moveBy(
-            x: -bgScaledWidth, y: 0, duration: TimeInterval(bgScaledWidth / moveSpeed))
-        let resetAction = SKAction.moveBy(x: bgScaledWidth, y: 0, duration: 0)
-        let loopAction = SKAction.repeatForever(SKAction.sequence([moveAction, resetAction]))
-
-        busBg1.run(loopAction)
-        busBg2.run(loopAction)
-
         let moveUp = SKAction.moveBy(x: 0, y: 4, duration: 0.08)
         let moveDown = SKAction.moveBy(x: 0, y: -4, duration: 0.08)
         let vibrate = SKAction.repeatForever(SKAction.sequence([moveUp, moveDown]))
         busSceneImg.run(vibrate)
 
-        // Mark story as completed after bus scene plays
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             NotificationCenter.default.post(name: Notification.Name("StoryCompleted"), object: nil)
         }

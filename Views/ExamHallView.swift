@@ -6,11 +6,12 @@ import SwiftUI
 @Generable
 struct MCQ {
     var question: String
-    var optionA: String
-    var optionB: String
-    var optionC: String
-    var optionD: String
-    var correctOption: String
+    @Guide(description: "Exactly 4 options.", .count(4))
+    var options: [String]
+    @Guide(
+        description:
+            "The exact text of the correct option. MUST uniquely match one item in `options`.")
+    var correctAnswer: String
     var explanation: String
 }
 
@@ -135,9 +136,9 @@ struct ExamHallView: View {
         Task {
             do {
                 let prompt = """
-                    Generate exactly 10 multiple choice questions testing Object-Oriented Programming (OOP) in Swift.
-                    Strictly limit the syllabus to: Inheritance, Polymorphism, Encapsulation, and Abstraction.
-                    Make the questions beginner friendly. Ensure exactly one correct option (A, B, C, or D).
+                    Generate exactly 10 Easy multiple choice questions testing Object-Oriented Programming (OOP) in Swift.
+                    Strictly limit the syllabus to: class objects, Inheritance, Polymorphism, Encapsulation, and Abstraction only and no SYNTAX QUESTIONS.
+                    Make the questions beginner friendly. Ensure exactly 4 options per question. The correctAnswer MUST exactly match the text of one of the options.
                     """
 
                 let response = try await session.respond(
@@ -152,71 +153,116 @@ struct ExamHallView: View {
                     }
                 }
             } catch {
-                print("Failed to generate exam: \(error)")
                 let mockPaper = ExamPaper(questions: [
                     MCQ(
                         question: "What does OOP stand for?",
-                        optionA: "Object-Oriented Programming", optionB: "Only Open Papers",
-                        optionC: "Overly Optimistic Programming",
-                        optionD: "Optional Object Passing", correctOption: "A",
-                        explanation: "OOP stands for Object-Oriented Programming."),
-                    MCQ(
-                        question: "Which of these is a pillar of OOP?", optionA: "Compilation",
-                        optionB: "Polymorphism", optionC: "Iteration", optionD: "Execution",
-                        correctOption: "B",
-                        explanation: "Polymorphism is one of the 4 pillars of OOP."),
-                    MCQ(
-                        question: "What is a Class in Swift?", optionA: "A real-world object",
-                        optionB: "A blueprint for creating objects", optionC: "A type of loop",
-                        optionD: "A compiled binary", correctOption: "B",
+                        options: [
+                            "Object-Oriented Programming",
+                            "Open Output Processing",
+                            "Ordered Object Placement",
+                            "Optional Output Programming",
+                        ],
+                        correctAnswer: "Object-Oriented Programming",
                         explanation:
-                            "A Class acts as a blueprint from which objects are instantiated."),
-                    MCQ(
-                        question: "What allows an object to take on many forms?",
-                        optionA: "Encapsulation", optionB: "Polymorphism", optionC: "Inheritance",
-                        optionD: "Abstraction", correctOption: "B",
-                        explanation:
-                            "Polymorphism allows objects of different types to be treated as instances of the same class through a common interface."
+                            "OOP stands for Object-Oriented Programming, a style of coding that organizes software around objects."
                     ),
+
                     MCQ(
-                        question: "What hides the internal state of an object?",
-                        optionA: "Encapsulation", optionB: "Abstraction", optionC: "Polymorphism",
-                        optionD: "Inheritance", correctOption: "A",
+                        question: "In Swift, what keyword do you use to create a class?",
+                        options: ["struct", "func", "class", "var"],
+                        correctAnswer: "class",
+                        explanation: "The 'class' keyword is used to define a class in Swift."
+                    ),
+
+                    MCQ(
+                        question: "Which of these is a real-world example of a Class and Object?",
+                        options: [
+                            "Car is an object, Toyota is the class",
+                            "Animal is a class, Dog is an object",
+                            "Swift is a class, Xcode is an object",
+                            "A loop is a class, a variable is an object",
+                        ],
+                        correctAnswer: "Animal is a class, Dog is an object",
                         explanation:
-                            "Encapsulation bundles data and methods and hides the internal state."),
+                            "A class is a blueprint (Animal), and an object is a specific instance created from it (Dog)."
+                    ),
+
+                    MCQ(
+                        question: "What is an object in OOP?",
+                        options: [
+                            "A type of loop",
+                            "A keyword in Swift",
+                            "An instance created from a class",
+                            "A function that returns a value",
+                        ],
+                        correctAnswer: "An instance created from a class",
+                        explanation: "An object is created (instantiated) from a class blueprint."
+                    ),
+
                     MCQ(
                         question:
-                            "What simplifies complex reality by modeling classes appropriate to the problem?",
-                        optionA: "Polymorphism", optionB: "Encapsulation", optionC: "Abstraction",
-                        optionD: "Inheritance", correctOption: "C",
+                            "Which OOP concept allows one class to inherit properties from another?",
+                        options: ["Encapsulation", "Abstraction", "Polymorphism", "Inheritance"],
+                        correctAnswer: "Inheritance",
                         explanation:
-                            "Abstraction reduces complexity by hiding unnecessary details from the user."
+                            "Inheritance lets a child class reuse properties and methods from a parent class."
                     ),
+
                     MCQ(
-                        question:
-                            "Which mechanism allows a class to acquire properties of another class?",
-                        optionA: "Abstraction", optionB: "Encapsulation", optionC: "Inheritance",
-                        optionD: "Polymorphism", correctOption: "C",
+                        question: "If class Dog inherits from class Animal, what is Animal called?",
+                        options: ["Child class", "Sub class", "Parent class", "Object class"],
+                        correctAnswer: "Parent class",
                         explanation:
-                            "Inheritance creates a parent-child relationship where the child inherits from the parent."
+                            "The class being inherited from is called the Parent (or Super) class, while Dog is the child class."
                     ),
+
                     MCQ(
-                        question: "What is an instance of a Class called?", optionA: "A method",
-                        optionB: "A property", optionC: "An object", optionD: "A function",
-                        correctOption: "C",
-                        explanation: "An object is an instantiated instance of a Class."),
-                    MCQ(
-                        question: "Which of the following is NOT a pillar of OOP?",
-                        optionA: "Encapsulation", optionB: "Inheritance", optionC: "Recursion",
-                        optionD: "Polymorphism", correctOption: "C",
+                        question: "What does Encapsulation mean in OOP?",
+                        options: [
+                            "A class inheriting from another class",
+                            "Hiding an object's internal data and protecting it",
+                            "An object taking many forms",
+                            "Removing unwanted properties",
+                        ],
+                        correctAnswer: "Hiding an object's internal data and protecting it",
                         explanation:
-                            "Recursion is a procedural programming concept, not an OOP pillar."),
+                            "Encapsulation means bundling data inside a class and restricting direct access to it."
+                    ),
+
                     MCQ(
-                        question: "What is the purpose of an init() method?",
-                        optionA: "To delete an object",
-                        optionB: "To initialize an object's properties", optionC: "To hide data",
-                        optionD: "To inherit from a superclass", correctOption: "B",
-                        explanation: "The init method sets up the initial state of an object."),
+                        question: "What does Abstraction help us do in OOP?",
+                        options: [
+                            "Copy one class into another",
+                            "Show all internal details of a class",
+                            "Hide unnecessary details and show only what is needed",
+                            "Create multiple objects at once",
+                        ],
+                        correctAnswer: "Hide unnecessary details and show only what is needed",
+                        explanation:
+                            "Abstraction hides complex implementation details and exposes only the essential features."
+                    ),
+
+                    MCQ(
+                        question: "What is Polymorphism in simple terms?",
+                        options: [
+                            "A class that cannot be inherited",
+                            "The ability of different objects to respond to the same method differently",
+                            "Storing data inside a class",
+                            "Writing a function inside a loop",
+                        ],
+                        correctAnswer:
+                            "The ability of different objects to respond to the same method differently",
+                        explanation:
+                            "Polymorphism allows different classes to define their own version of the same method."
+                    ),
+
+                    MCQ(
+                        question: "Which of the following is NOT one of the four pillars of OOP?",
+                        options: ["Encapsulation", "Inheritance", "Compilation", "Abstraction"],
+                        correctAnswer: "Compilation",
+                        explanation:
+                            "The four pillars of OOP are Encapsulation, Inheritance, Polymorphism, and Abstraction. Compilation is not one of them."
+                    ),
                 ])
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.paper = mockPaper
@@ -286,10 +332,10 @@ struct ExamHallView: View {
                             .multilineTextAlignment(.leading)
 
                         VStack(alignment: .leading, spacing: 15) {
-                            optionButton(for: index, letter: "A", text: q.optionA)
-                            optionButton(for: index, letter: "B", text: q.optionB)
-                            optionButton(for: index, letter: "C", text: q.optionC)
-                            optionButton(for: index, letter: "D", text: q.optionD)
+                            ForEach(0..<q.options.count, id: \.self) { optIndex in
+                                optionButton(
+                                    for: index, optIndex: optIndex, text: q.options[optIndex])
+                            }
                         }
                         .padding(.leading, 30)
                     }
@@ -318,11 +364,13 @@ struct ExamHallView: View {
         }
     }
 
-    private func optionButton(for questionIndex: Int, letter: String, text: String) -> some View {
-        let isSelected = selectedAnswers[questionIndex] == letter
+    private func optionButton(for questionIndex: Int, optIndex: Int, text: String) -> some View {
+        let isSelected = selectedAnswers[questionIndex] == text
+        let labels = ["A", "B", "C", "D", "E"]
+        let letter = optIndex < labels.count ? labels[optIndex] : "?"
 
         return Button(action: {
-            selectedAnswers[questionIndex] = letter
+            selectedAnswers[questionIndex] = text
         }) {
             HStack(spacing: 15) {
 
@@ -350,12 +398,7 @@ struct ExamHallView: View {
 
     private func submitExam() {
         withAnimation {
-            examState = .grading
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation {
-                examState = .scorecard
-            }
+            examState = .scorecard
         }
     }
 
@@ -395,7 +438,7 @@ struct ExamHallView: View {
                     ForEach(0..<10, id: \.self) { i in
                         let q = paper.questions[i]
                         let userAns = selectedAnswers[i] ?? "None"
-                        let isCorrect = userAns == q.correctOption
+                        let isCorrect = userAns == q.correctAnswer
 
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Q\(i+1): \(q.question)")
@@ -405,7 +448,7 @@ struct ExamHallView: View {
                             HStack {
                                 Text("Your Answer: \(userAns)")
                                     .foregroundColor(isCorrect ? .blue : .red)
-                                Text("| Correct: \(q.correctOption)")
+                                Text("| Correct: \(q.correctAnswer)")
                                     .foregroundColor(.green)
                             }
                             .font(.custom("AmericanTypewriter", size: 20))
@@ -444,7 +487,7 @@ struct ExamHallView: View {
     private func calculateScore(paper: ExamPaper) -> Int {
         var score = 0
         for i in 0..<10 {
-            if selectedAnswers[i] == paper.questions[i].correctOption {
+            if selectedAnswers[i] == paper.questions[i].correctAnswer {
                 score += 1
             }
         }

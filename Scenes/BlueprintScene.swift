@@ -70,10 +70,9 @@ class BlueprintScene: BaseScene {
             tori.bag = \(bagStatus)
             """
 
-        let codeLabel = SKLabelNode(fontNamed: "Menlo")
-        codeLabel.text = codeText
-        codeLabel.fontSize = 16
-        codeLabel.fontColor = .green
+        let codeLabel = SKLabelNode()
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            codeText, fontName: "Menlo", fontSize: 16)
         codeLabel.numberOfLines = 0
         codeLabel.horizontalAlignmentMode = .left
         codeLabel.position = CGPoint(x: -150, y: 100)
@@ -167,10 +166,9 @@ class BlueprintScene: BaseScene {
                 var hasButtons: Bool
             }
             """
-        let codeLabel = SKLabelNode(fontNamed: "Menlo")
-        codeLabel.text = code
-        codeLabel.fontSize = 16
-        codeLabel.fontColor = .green
+        let codeLabel = SKLabelNode()
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            code, fontName: "Menlo", fontSize: 16)
         codeLabel.numberOfLines = 0
         codeLabel.horizontalAlignmentMode = .left
         codeLabel.position = CGPoint(x: -180, y: 70)
@@ -231,10 +229,9 @@ class BlueprintScene: BaseScene {
                 }
             }
             """
-        let codeLabel = SKLabelNode(fontNamed: "Menlo")
-        codeLabel.text = code
-        codeLabel.fontSize = 14
-        codeLabel.fontColor = .green
+        let codeLabel = SKLabelNode()
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            code, fontName: "Menlo", fontSize: 14)
         codeLabel.numberOfLines = 0
         codeLabel.horizontalAlignmentMode = .left
         codeLabel.position = CGPoint(x: -180, y: 80)
@@ -291,10 +288,9 @@ class BlueprintScene: BaseScene {
                 func write() -> String { "graphite writing" }
             }
             """
-        let codeLabel = SKLabelNode(fontNamed: "Menlo")
-        codeLabel.text = code
-        codeLabel.fontSize = 14
-        codeLabel.fontColor = .green
+        let codeLabel = SKLabelNode()
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            code, fontName: "Menlo", fontSize: 14)
         codeLabel.numberOfLines = 0
         codeLabel.horizontalAlignmentMode = .left
         codeLabel.position = CGPoint(x: -190, y: 80)

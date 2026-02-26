@@ -71,6 +71,7 @@ class ClosetScene: BaseScene {
         let dropW = tori.size.width * toriScale * 0.4
         let dropH = tori.size.height * toriScale * 1.5
         toriDropZone = SKShapeNode(rectOf: CGSize(width: dropW, height: dropH), cornerRadius: 8)
+
         toriDropZone.fillColor = .clear
         toriDropZone.strokeColor = .clear
 
@@ -94,17 +95,40 @@ class ClosetScene: BaseScene {
         let closetCenterX = size.width * 0.39
         let scaledClosetH = closet.size.height * closetScale
         let scaledClosetW = closet.size.width * closetScale
-        let pantSpacing = scaledClosetW * 0.15
+        let pantSpacing = scaledClosetW * 0.07
         let pantY = closet.position.y - scaledClosetH * 0.18
-        let btnSize = CGSize(width: scaledClosetW * 0.24, height: scaledClosetH * 0.5)
+
+        let defaultBtnSize = CGSize(width: scaledClosetW * 0.24, height: scaledClosetH * 0.5)
 
         for i in 0..<3 {
-            let btn = SKShapeNode(rectOf: btnSize, cornerRadius: 8)
+            var boxWidth = defaultBtnSize.width
+            var boxX = closetCenterX + CGFloat(i - 1) * pantSpacing
+
+            if i == 0 {
+                boxWidth = scaledClosetW * 0.112
+                boxX -= scaledClosetW * 0.05
+            }
+
+            var middleBoxWidth = defaultBtnSize.width
+            if i == 1 {
+                middleBoxWidth = scaledClosetW * 0.115
+            }
+
+            var rightBoxWidth = defaultBtnSize.width
+            if i == 2 {
+                rightBoxWidth = scaledClosetW * 0.112
+                boxX += scaledClosetW * 0.05
+            }
+
+            let finalWidth = i == 0 ? boxWidth : (i == 1 ? middleBoxWidth : rightBoxWidth)
+            let customSize = CGSize(width: finalWidth, height: defaultBtnSize.height)
+            let btn = SKShapeNode(rectOf: customSize, cornerRadius: 8)
+
             btn.fillColor = .clear
             btn.strokeColor = .clear
 
             btn.position = CGPoint(
-                x: closetCenterX + CGFloat(i - 1) * pantSpacing,
+                x: boxX,
                 y: pantY
             )
             btn.zPosition = 10

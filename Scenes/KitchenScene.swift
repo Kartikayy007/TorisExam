@@ -241,7 +241,7 @@ class KitchenScene: BaseScene {
             code += "  // Ingredients ENCAPSULATED (Hidden)\n"
 
             for item in ingredientsAdded {
-                code += "  private var \(item): Ingredient 🔒\n"
+                code += "  private var \(item): Ingredient\n"
             }
 
             if ingredientsAdded.count < 3 {
@@ -324,7 +324,8 @@ class KitchenScene: BaseScene {
             code += "// Abstraction\n\n"
             code += "// Tori's lunch is packed!"
         }
-        codeLabel.text = code
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            code, fontName: "Menlo-Regular", fontSize: min(22, codePanelWidth * 0.05))
         codeContentNode.position.y = 0
     }
 
