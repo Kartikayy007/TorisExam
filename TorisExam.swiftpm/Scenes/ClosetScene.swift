@@ -138,15 +138,22 @@ class ClosetScene: BaseScene {
         }
 
         let shirtY = closet.position.y + scaledClosetH * 0.28
-        let shirtBtnSize = CGSize(width: scaledClosetW * 0.15, height: scaledClosetH * 0.3)
+
+        let shirtSizes: [CGSize] = [
+            CGSize(width: scaledClosetW * 0.1, height: scaledClosetH * 0.3),
+            CGSize(width: scaledClosetW * 0.1, height: scaledClosetH * 0.3),
+            CGSize(width: scaledClosetW * 0.13, height: scaledClosetH * 0.35),
+        ]
+        let shirtXOffsets: [CGFloat] = [-35, 0, 40]
+        let shirtYOffsets: [CGFloat] = [50, 30, 20]
 
         for i in 0..<3 {
-            let btn = SKShapeNode(rectOf: shirtBtnSize, cornerRadius: 8)
+            let btn = SKShapeNode(rectOf: shirtSizes[i], cornerRadius: 8)
             btn.fillColor = .clear
             btn.strokeColor = .clear
             btn.position = CGPoint(
-                x: closetCenterX + CGFloat(i - 1) * pantSpacing,
-                y: shirtY
+                x: closetCenterX + CGFloat(i - 1) * pantSpacing + shirtXOffsets[i],
+                y: shirtY + shirtYOffsets[i]
             )
             btn.zPosition = 10
             btn.name = "shirt_\(i)"
