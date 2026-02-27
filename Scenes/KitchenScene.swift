@@ -98,13 +98,12 @@ class KitchenScene: BaseScene {
 
     var packLunchButton: SKShapeNode!
     var draggedStepButton: SKNode?
-    // For Abstraction phase tracking
     var absorbedCount = 0
     var absorbedMethods: [String] = []
     var stepButtons: [SKShapeNode] = []
     let stepMethods = [
-        "boilWater()", "addPasta()", "drain()",
-        "serve()", "addCheese()", "packSandwich()",
+        "packSandwich()", "packPasta()", "packFruit()",
+        "addNapkin()", "addJuiceBox()", "sealLunchbox()",
     ]
 
     override func sceneDidSetup() {
@@ -596,7 +595,6 @@ class KitchenScene: BaseScene {
                 if distance < potSprite.size.width * potSprite.xScale * 0.7 {
                     cheeseDroppedOnPasta()
                 } else {
-                    // Snap back
                     let centerX = size.width * 0.40
                     let pastaX = centerX - 120
                     cheese.run(
@@ -610,10 +608,14 @@ class KitchenScene: BaseScene {
 
         if isDraggingPasta, let pasta = rawPastaSprite {
             isDraggingPasta = false
+
+            // The visual drop box is now heavily offset to the left
+            let validDropCenterX = potSprite.position.x - 350
             let distance = hypot(
-                pasta.position.x - potSprite.position.x,
+                pasta.position.x - validDropCenterX,
                 pasta.position.y - potSprite.position.y)
-            if distance < potSprite.size.width * potSprite.xScale * 0.7 {
+
+            if distance < potSprite.size.width * potSprite.xScale * 0.3 {
                 pastaDroppedInPot()
             } else {
                 let centerX = size.width * 0.40

@@ -205,7 +205,7 @@ extension KitchenScene {
         var delay: TimeInterval = 0.0
 
         let dropHeight = size.height * 0.8
-        let finalY = lunchbox.position.y  // Drop exactly to its center
+        let finalY = lunchbox.position.y
 
         for (i, itemName) in items.enumerated() {
             let food = SKSpriteNode(imageNamed: itemName)
@@ -265,7 +265,7 @@ extension KitchenScene {
             let scale =
                 min(self.size.width / robo.size.width, self.size.height / robo.size.height) * 0.75
             robo.setScale(max(scale, 1.0))
-            robo.position = CGPoint(x: self.size.width / 2, y: self.size.height * 0.38)
+            robo.position = CGPoint(x: self.size.width / 2, y: self.size.height * 0.45)
             robo.zPosition = 10
             robo.alpha = 0
             self.gameLayer.addChild(robo)
@@ -274,14 +274,14 @@ extension KitchenScene {
                 SKAction.group([
                     SKAction.fadeIn(withDuration: 0.5),
                     SKAction.move(
-                        to: CGPoint(x: self.size.width / 2, y: self.size.height * 0.52),
+                        to: CGPoint(x: self.size.width / 2, y: self.size.height * 0.60),
                         duration: 0.5),
                 ])
             )
 
             self.dialogBox.showDialog(
                 name: "Robot",
-                text: "You are ready for school, let's go!"
+                text: "You are ready for school and Exam, let's go!"
             )
             self.dialogBox.onDialogComplete = {
                 self.autoPlaying = false

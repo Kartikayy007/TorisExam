@@ -84,12 +84,12 @@ struct ExamHallView: View {
                         .shadow(radius: 3)
                         .offset(y: -15)
 
-                    VStack {
+                    VStack(spacing: 0) {
                         Text("EXAM: OOPS")
-                            .font(.custom("AmericanTypewriter-Bold", size: 48))
+                            .font(.custom("AmericanTypewriter-Bold", size: 36))
                             .foregroundColor(.black)
-                            .padding(.top, 80)
-                            .padding(.bottom, 20)
+                            .padding(.top, 55)
+                            .padding(.bottom, 6)
 
                         if examState != .loading {
                             HStack {
@@ -97,13 +97,11 @@ struct ExamHallView: View {
                                 Spacer()
                                 Text("DATE: \(currentDate)")
                             }
-                            .font(.custom("AmericanTypewriter", size: 28))
+                            .font(.custom("AmericanTypewriter", size: 20))
                             .foregroundColor(.black)
-                            .padding(.horizontal, 60)
-                            .padding(.bottom, 30)
+                            .padding(.horizontal, 50)
+                            .padding(.bottom, 6)
                         }
-
-                        Spacer()
 
                         switch examState {
                         case .loading:
@@ -422,27 +420,26 @@ struct ExamHallView: View {
 
         VStack(spacing: 0) {
             Text(pass ? "EXAM PASSED!" : "EXAM FAILED")
-                .font(.custom("AmericanTypewriter-Bold", size: 64))
+                .font(.custom("AmericanTypewriter-Bold", size: 36))
                 .foregroundColor(pass ? .green : .red)
                 .rotationEffect(.degrees(-5))
-                .scaleEffect(1.1)
-                .padding(.bottom, 20)
+                .padding(.bottom, 4)
 
             Text("Final Score: \(score) / 10")
-                .font(.custom("AmericanTypewriter-Bold", size: 42))
+                .font(.custom("AmericanTypewriter-Bold", size: 24))
                 .foregroundColor(.black)
-                .padding(.bottom, 20)
+                .padding(.bottom, 8)
 
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 12) {
                     ForEach(0..<10, id: \.self) { i in
                         let q = paper.questions[i]
                         let userAns = selectedAnswers[i] ?? "None"
                         let isCorrect = userAns == q.correctAnswer
 
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text("Q\(i+1): \(q.question)")
-                                .font(.custom("AmericanTypewriter-Bold", size: 24))
+                                .font(.custom("AmericanTypewriter-Bold", size: 20))
                                 .foregroundColor(.black)
 
                             HStack {
@@ -451,36 +448,35 @@ struct ExamHallView: View {
                                 Text("| Correct: \(q.correctAnswer)")
                                     .foregroundColor(.green)
                             }
-                            .font(.custom("AmericanTypewriter", size: 20))
+                            .font(.custom("AmericanTypewriter", size: 16))
 
                             if !isCorrect {
                                 Text("Explanation: \(q.explanation)")
-                                    .font(.custom("AmericanTypewriter", size: 18))
+                                    .font(.custom("AmericanTypewriter", size: 14))
                                     .foregroundColor(.gray)
                             }
                         }
-                        .padding()
+                        .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.black.opacity(0.05))
                         .cornerRadius(10)
                     }
                 }
-                .padding(.horizontal, 40)
+                .padding(.horizontal, 20)
             }
-            .frame(maxHeight: 450)
 
             Button(action: {
                 gameState.quitToMainMenu()
             }) {
                 Text("Return to Menu")
-                    .font(.custom("AmericanTypewriter-Bold", size: 32))
+                    .font(.custom("AmericanTypewriter-Bold", size: 24))
                     .foregroundColor(.white)
-                    .padding(.vertical, 15)
-                    .padding(.horizontal, 40)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 30)
                     .background(Color.blue)
                     .cornerRadius(12)
             }
-            .padding(.top, 30)
+            .padding(.top, 12)
         }
     }
 

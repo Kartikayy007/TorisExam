@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct OOPPillar: Identifiable {
     let id = UUID()
     let title: String
@@ -32,21 +31,21 @@ private let oopPillars: [OOPPillar] = [
             TheoryPoint(
                 heading: "What is a Class?",
                 body:
-                    "A class is a blueprint for creating objects. It defines the properties (data) and methods (behaviour) that every object of that type will have.",
+                    "A class is a blueprint for creating objects. It defines the properties (data) and methods (behaviour) that every object of that type will have. In the Closet scene, 'Clothing' was the class.",
                 codeSnippet:
-                    "class Sandwich {\n    var bread: String\n    var fillings: [String]\n\n    func eat() {\n        print(\"Nom nom nom!\")\n    }\n}"
+                    "class Clothing {\n    var color: String\n    var size: String\n\n    func tryOn() {\n        print(\"Trying on!\")\n    }\n}"
             ),
             TheoryPoint(
                 heading: "What is an Object?",
                 body:
-                    "An object is one specific instance of a class. You can make many objects from the same class — just like Tori could pack multiple sandwiches from the same recipe.",
+                    "An object is one specific instance of a class. You can make many objects from the same class — just like Tori picked specific pants and a shirt from the closet, each one was an object of the Clothing class.",
                 codeSnippet:
-                    "let toriLunch = Sandwich()\ntoriLunch.bread = \"Wholegrain\"\ntoriLunch.fillings = [\"cheese\", \"tomato\", \"spinach\"]\ntoriLunch.eat() // Nom nom nom!"
+                    "let myPants = Clothing()\nmyPants.color = \"Blue\"\nmyPants.size = \"M\"\nmyPants.tryOn()\n\nlet myShirt = Clothing()\nmyShirt.color = \"Yellow\"\nmyShirt.size = \"M\"\nmyShirt.tryOn()"
             ),
             TheoryPoint(
-                heading: "Why does this matter?",
+                heading: "Properties & Methods",
                 body:
-                    "Instead of scattered variables, related data and behaviour live together in one organised unit — like all of Tori's lunch ingredients packaged in a single lunchbox.",
+                    "Properties describe what an object HAS (color, size). Methods describe what an object CAN DO (tryOn). Together, they bundle related data and behaviour in one organised unit.",
                 codeSnippet: nil
             ),
         ]
@@ -129,9 +128,9 @@ private let oopPillars: [OOPPillar] = [
             TheoryPoint(
                 heading: "What is Abstraction?",
                 body:
-                    "Abstraction means hiding complex steps behind one simple interface. In the Kitchen, all six cooking steps were hidden inside a single packLunch() call — one tap, everything done.",
+                    "Abstraction means hiding complex steps behind one simple interface. In the Kitchen, all six packing steps were hidden inside a single packLunch() call — one tap, everything done.",
                 codeSnippet:
-                    "func packLunch() {\n    boilWater()\n    addPasta()\n    drain()\n    serve()\n    addCheese()\n    packSandwich()\n}\n\n// Caller doesn't need to know any of\n// the six steps — just one call!\npackLunch()"
+                    "func packLunch() {\n    packSandwich()\n    packPasta()\n    packFruit()\n    addNapkin()\n    addJuiceBox()\n    sealLunchbox()\n}\n\n// Caller doesn't need to know any of\n// the six steps — just one call!\npackLunch()"
             ),
             TheoryPoint(
                 heading: "Protocols",
@@ -149,7 +148,6 @@ private let oopPillars: [OOPPillar] = [
         ]
     ),
 ]
-
 
 struct TheoryView: View {
     let onDismiss: () -> Void
@@ -290,7 +288,6 @@ struct TheoryView: View {
     }
 }
 
-
 struct PillarTabButton: View {
     let pillar: OOPPillar
     let isSelected: Bool
@@ -325,7 +322,6 @@ struct PillarTabButton: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
-
 
 struct TheoryPointCard: View {
     let point: TheoryPoint

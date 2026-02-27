@@ -234,7 +234,8 @@ class ClosetScene: BaseScene {
             code += "\n\n// Tori is ready!"
         }
 
-        codeLabel.text = code
+        codeLabel.attributedText = SyntaxHighlighter.highlight(
+            code, fontName: "Menlo-Regular", fontSize: min(22, codePanelWidth * 0.05))
         codeContentNode.position.y = 0
     }
 

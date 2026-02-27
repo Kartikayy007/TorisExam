@@ -85,7 +85,7 @@ struct MainMenuView: View {
                             }
                         }) {
                             LockedMenuLabel(
-                                text: "Theory", isLocked: !storyCompleted, index: 3,
+                                text: "Revise", isLocked: !storyCompleted, index: 3,
                                 hoveredIndex: $hoveredIndex)
                         }
                         .buttonStyle(MainMenuButtonStyle(index: 3, hoveredIndex: $hoveredIndex))

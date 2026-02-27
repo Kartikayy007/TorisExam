@@ -467,11 +467,7 @@ extension KitchenScene {
         pasta.removeAllActions()
         pasta.run(
             SKAction.sequence([
-                SKAction.group([
-                    SKAction.move(to: potSprite.position, duration: 0.3),
-                    SKAction.scale(to: 0.05, duration: 0.3),
-                    SKAction.fadeOut(withDuration: 0.3),
-                ]),
+                SKAction.fadeOut(withDuration: 0.3),
                 SKAction.removeFromParent(),
             ]))
         rawPastaSprite = nil
@@ -780,6 +776,12 @@ extension KitchenScene {
             cookingContainer.addChild(rawPasta)
             rawPastaSprite = rawPasta
 
+            let pastaHitbox = SKShapeNode(rectOf: rawPasta.calculateAccumulatedFrame().size)
+            pastaHitbox.fillColor = .clear
+            pastaHitbox.strokeColor = .clear
+            pastaHitbox.zPosition = -1
+            rawPasta.addChild(pastaHitbox)
+
             rawPasta.run(
                 SKAction.repeatForever(
                     SKAction.sequence([
@@ -787,18 +789,18 @@ extension KitchenScene {
                         SKAction.scale(to: pScale, duration: 0.5),
                     ])))
 
-            let dropZone = SKShapeNode(rectOf: CGSize(width: 220, height: 200), cornerRadius: 16)
-            dropZone.strokeColor = SKColor(white: 1.0, alpha: 0.5)
-            dropZone.fillColor = SKColor(white: 1.0, alpha: 0.1)
+            let dropZone = SKShapeNode(rectOf: CGSize(width: 180, height: 180), cornerRadius: 16)
+            dropZone.strokeColor = .clear
+            dropZone.fillColor = .clear
             dropZone.lineWidth = 4
             let path = CGMutablePath()
             path.addRoundedRect(
-                in: CGRect(x: -110, y: -100, width: 220, height: 200), cornerWidth: 16,
+                in: CGRect(x: -90, y: -90, width: 180, height: 180), cornerWidth: 16,
                 cornerHeight: 16)
             let dashedPath = path.copy(dashingWithPhase: 0, lengths: [10, 10])
             dropZone.path = dashedPath
 
-            dropZone.position = CGPoint(x: centerX - 250, y: size.height * 0.50)
+            dropZone.position = CGPoint(x: potSprite.position.x - 350, y: potSprite.position.y)
             dropZone.zPosition = 5
             dropZone.name = "visible_drop_zone"
             cookingContainer.addChild(dropZone)
@@ -1103,7 +1105,6 @@ extension KitchenScene {
     }
 }
 
-
 private class KitchenSceneInheritancePreview: KitchenScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
@@ -1111,10 +1112,40 @@ private class KitchenSceneInheritancePreview: KitchenScene {
     }
 }
 
+private class KitchenSceneInheritanceAddPastaPreview: KitchenScene {
+    override func didMove(to view: SKView) {
+        super.didMove(to: view)
+        sceneDidSetup()
+
+        currentPhase = .inheritance
+        currentRecipeIndex = 0
+        cookingStep = 0
+        inheritanceDone = false
+
+        startCookingRound(index: 0)
+
+        // Fast-forward to addPasta()
+        completeBoiling()  // This handles cookingStep = 1, sets pasta recipe steps, etc.
+    }
+}
+
 struct KitchenSceneInheritance_Previews: PreviewProvider {
     static var previews: some View {
-        SpriteView(scene: KitchenSceneInheritancePreview(size: CGSize(width: 1920, height: 1080)))
+        Group {
+            SpriteView(
+                scene: KitchenSceneInheritancePreview(size: CGSize(width: 1920, height: 1080))
+            )
             .ignoresSafeArea()
             .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Inheritance Intro")
+
+            SpriteView(
+                scene: KitchenSceneInheritanceAddPastaPreview(
+                    size: CGSize(width: 1920, height: 1080))
+            )
+            .ignoresSafeArea()
+            .previewInterfaceOrientation(.landscapeLeft)
+            .previewDisplayName("Add Pasta Step")
+        }
     }
 }
