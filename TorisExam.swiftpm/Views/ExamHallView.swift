@@ -274,6 +274,7 @@ struct ExamHallView: View {
                     Generate exactly 10 Easy multiple choice questions testing Object-Oriented Programming (OOP) in Swift.
                     Strictly limit the syllabus to: class objects, Inheritance, Polymorphism, Encapsulation, and Abstraction only and no SYNTAX QUESTIONS.
                     Make the questions beginner friendly. Ensure exactly 4 options per question. The correctAnswer MUST exactly match the text of one of the options.
+                    IMPORTANT: Do NOT prefix the options with labels like A., B., C., D. or 1., 2., 3., 4. — just provide the raw answer text.
                     """
 
                 let response = try await session.respond(
@@ -405,7 +406,14 @@ struct ExamHallView: View {
         }
     }
 
+    private func stripLabel(_ text: String) -> String {
+        // Remove leading labels like "A. ", "B) ", "1. ", "a) " etc.
+        let pattern = #/^[A-Da-d1-4][.):]\s*/#
+        return text.replacing(pattern, with: "")
+    }
+
     private func optionButton(for questionIndex: Int, optIndex: Int, text: String) -> some View {
+        let cleanText = stripLabel(text)
         let isSelected = selectedAnswers[questionIndex] == text
         let labels = ["A", "B", "C", "D", "E"]
         let letter = optIndex < labels.count ? labels[optIndex] : "?"
@@ -426,7 +434,7 @@ struct ExamHallView: View {
                     }
                 }
 
-                Text("\(letter). \(text)")
+                Text("\(letter). \(cleanText)")
                     .font(.custom("AmericanTypewriter", size: 26))
                     .foregroundColor(.black)
                     .multilineTextAlignment(.leading)

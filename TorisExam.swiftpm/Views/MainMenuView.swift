@@ -19,7 +19,7 @@ struct MainMenuView: View {
     @State private var isHelpPopup = false
     @State private var showingLockedPopup = false
     @State private var hoveredIndex: Int? = 0
-    @State private var showingAIDebug = false
+
     @ObservedObject private var audioManager = AudioManager.shared
 
     var body: some View {
@@ -125,7 +125,7 @@ struct MainMenuView: View {
                     Button(action: {
                         audioManager.toggleMute()
                     }) {
-                        Image(  
+                        Image(
                             systemName: audioManager.isMuted
                                 ? "speaker.slash.fill" : "speaker.wave.3.fill"
                         )
@@ -141,25 +141,6 @@ struct MainMenuView: View {
                 Spacer()
             }
             .opacity(isVisible ? 1 : 0)
-
-            // Secret AI Debug Button in bottom left
-            if #available(iOS 26.0, macOS 16.0, *) {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            withAnimation { showingAIDebug = true }
-                        }) {
-                            Image(systemName: "cpu")
-                                .font(.system(size: 20))
-                                .foregroundColor(.white.opacity(0.3))
-                        }
-                        .padding(20)
-                        Spacer()
-                    }
-                }
-            }
 
             if showingInstructions {
                 InstructionsView(
@@ -198,13 +179,6 @@ struct MainMenuView: View {
                     withAnimation { showingLockedPopup = false }
                 }
                 .zIndex(102)
-            }
-        }
-        .fullScreenCover(isPresented: $showingAIDebug) {
-            if #available(iOS 26.0, macOS 16.0, *) {
-                AIDebugView(onDismiss: {
-                    showingAIDebug = false
-                })
             }
         }
         .onAppear {
