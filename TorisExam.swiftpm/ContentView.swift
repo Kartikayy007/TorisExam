@@ -46,24 +46,7 @@ struct ContentView: View {
                 GamePlayView(gameState: gameState)
 
             case .examHall:
-                if #available(iOS 26.0, macOS 16.0, *) {
-                    ExamHallView(gameState: gameState)
-                } else {
-                    VStack(spacing: 20) {
-                        Text("Apple Intelligence Required")
-                            .font(.largeTitle)
-                            .foregroundColor(.white)
-                        Text("This feature requires iOS 26.0 or macOS 16.0.")
-                            .foregroundColor(.gray)
-                        Button("Go Back") {
-                            gameState.quitToMainMenu()
-                        }
-                        .padding()
-                        .background(Color.red.opacity(0.8))
-                        .cornerRadius(8)
-                        .foregroundColor(.white)
-                    }
-                }
+                ExamHallView(gameState: gameState)
             }
         }
         .blur(radius: isTransitioning ? 30 : 0)
