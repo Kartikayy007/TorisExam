@@ -35,7 +35,7 @@ struct CreditsView: View {
                     .padding(.bottom, 30)
 
                 Text(
-                    "All art, code, and design in Tori's Exam was created entirely by me.\n\nWith the exception of three assets, every visual in this project was hand-made from scratch. The Clock Background and the Blurred Kitchen Background were generated using AI. The Bus Window Scenery is a free vector graphic sourced from Vecteezy.\n\nThank you for playing!"
+                    "All art, code, and design in Tori's Exam was created entirely by me (Kartikay).\n\nWith the exception of three assets, every visual in this project was hand-made from scratch. The Clock Background and the Blurred Kitchen Background were generated using AI. The Bus Window Scenery is a free vector graphic sourced from Vecteezy.\n\nMusic: \"Go to the Picnic\" by Loyalty Freak Music (chosic.com/free-music/all/)\n\nThank you for playing!"
                 )
                 .font(.custom("AmericanTypewriter", size: 22))
                 .foregroundColor(Color(red: 0.25, green: 0.2, blue: 0.15))

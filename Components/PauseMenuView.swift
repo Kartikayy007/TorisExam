@@ -14,6 +14,7 @@ struct PauseMenuView: View {
 
     @State private var isVisible = false
     @State private var showingInstructions = false
+    @ObservedObject private var audioManager = AudioManager.shared
 
     var body: some View {
         ZStack {
@@ -46,6 +47,21 @@ struct PauseMenuView: View {
 
                     Button("Help") {
                         withAnimation { showingInstructions = true }
+                    }
+                    .buttonStyle(MenuButtonStyle())
+
+                    Button(action: {
+                        audioManager.toggleMute()
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(
+                                systemName: audioManager.isMuted
+                                    ? "speaker.slash.fill" : "speaker.wave.3.fill"
+                            )
+                            .font(.system(size: 24))
+
+                            Text("Sound")
+                        }
                     }
                     .buttonStyle(MenuButtonStyle())
 

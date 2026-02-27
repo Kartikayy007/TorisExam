@@ -19,6 +19,7 @@ struct MainMenuView: View {
     @State private var isHelpPopup = false
     @State private var showingLockedPopup = false
     @State private var hoveredIndex: Int? = 0
+    @ObservedObject private var audioManager = AudioManager.shared
 
     var body: some View {
         ZStack {
@@ -35,14 +36,13 @@ struct MainMenuView: View {
                     Spacer()
 
                     VStack(alignment: .leading, spacing: -5) {
-                        Text("Toris Exam")
+                        Text("Tori's Exam")
                             .font(.custom("AmericanTypewriter-Bold", size: 84))
                             .foregroundColor(Color(red: 1.0, green: 0.8, blue: 0.2))
                             .shadow(color: .black.opacity(0.6), radius: 4, x: 2, y: 2)
                     }
 
                     VStack(alignment: .leading, spacing: 15) {
-                        // MARK: Start
                         Button(action: {
                             isHelpPopup = false
                             withAnimation { showingInstructions = true }
@@ -53,7 +53,6 @@ struct MainMenuView: View {
                         .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 0 } }
                         }
 
-                        // MARK: Credits
                         Button(action: {
                             withAnimation { showingCredits = true }
                         }) {
@@ -63,7 +62,6 @@ struct MainMenuView: View {
                         .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 1 } }
                         }
 
-                        // MARK: Help
                         Button(action: {
                             isHelpPopup = true
                             withAnimation { showingInstructions = true }
@@ -74,7 +72,6 @@ struct MainMenuView: View {
                         .onHover { isHovered in if isHovered { withAnimation { hoveredIndex = 2 } }
                         }
 
-                        // MARK: Theory (locked until story complete)
                         Button(action: {
                             if storyCompleted {
                                 withAnimation { showingTheory = true }
@@ -117,6 +114,29 @@ struct MainMenuView: View {
                 .padding(.leading, 220)
                 .padding(.bottom, 20)
 
+                Spacer()
+            }
+            .opacity(isVisible ? 1 : 0)
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        audioManager.toggleMute()
+                    }) {
+                        Image(
+                            systemName: audioManager.isMuted
+                                ? "speaker.slash.fill" : "speaker.wave.3.fill"
+                        )
+                        .font(.system(size: 36))
+                        .foregroundColor(Color(red: 0.2, green: 0.15, blue: 0.1))
+                        .frame(width: 70, height: 70)
+                        .background(Circle().fill(Color.white))
+                        .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                    }
+                    .padding(.top, 40)
+                    .padding(.trailing, 180)
+                }
                 Spacer()
             }
             .opacity(isVisible ? 1 : 0)
@@ -168,7 +188,6 @@ struct MainMenuView: View {
     }
 }
 
-
 struct LockedMenuLabel: View {
     let text: String
     let isLocked: Bool
@@ -182,13 +201,13 @@ struct LockedMenuLabel: View {
             Text(text)
             if isLocked {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: isSelected ? 22 : 16))
+                    .font(.system(size: isSelected ? 28 : 22))
                     .opacity(0.7)
             }
         }
+        .opacity(isLocked ? 0.6 : 1.0)
     }
 }
-
 
 struct LockedFeaturePopup: View {
     let onDismiss: () -> Void
@@ -279,7 +298,6 @@ struct LockedFeaturePopup: View {
     }
 }
 
-
 struct MainMenuButtonStyle: ButtonStyle {
     let index: Int
     @Binding var hoveredIndex: Int?
@@ -288,7 +306,7 @@ struct MainMenuButtonStyle: ButtonStyle {
         let isSelected = hoveredIndex == index
 
         configuration.label
-            .font(.custom("AmericanTypewriter-Bold", size: isSelected ? 42 : 28))
+            .font(.custom("AmericanTypewriter-Bold", size: isSelected ? 52 : 36))
             .foregroundColor(
                 isSelected ? Color(red: 1.0, green: 0.8, blue: 0.2) : .white
             )

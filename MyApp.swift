@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct MyApp: App {
+    init() {
+        let _ = AudioManager.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
