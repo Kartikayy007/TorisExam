@@ -122,8 +122,8 @@ TorisExam.swiftpm/
 
 ### Run
 ```bash
-git clone https://github.com/Kartikayy007/ssc.git
-cd ssc
+git clone https://github.com/Kartikayy007/TorisExam.git
+cd TorisExam
 open TorisExam.swiftpm
 ```
 
