@@ -21,6 +21,7 @@
 **Tori's Exam** is a story-driven iPad game that teaches the **four pillars of Object-Oriented Programming** through everyday activities. Instead of reading dry textbook definitions, you join Tori — a student preparing for his OOP exam — and learn by doing.
 
 A friendly robot companion guides Tori (and you!) through each concept, while a **live code panel** shows real Swift code updating as you interact with the game.
+https://www.youtube.com/watch?v=qNy1T965_d8
 
 ---
 
